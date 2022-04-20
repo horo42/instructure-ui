@@ -10,6 +10,7 @@
     { "path": "../ui-babel-preset/tsconfig.build.json" },
     { "path": "../ui-test-utils/tsconfig.build.json" },
     { "path": "../ui-themes/tsconfig.build.json" },
+    { "path": "../debounce/tsconfig.build.json" },
     { "path": "../emotion/tsconfig.build.json" },
     { "path": "../shared-types/tsconfig.build.json" },
     { "path": "../ui-a11y-content/tsconfig.build.json" },

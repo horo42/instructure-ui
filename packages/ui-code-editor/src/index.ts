@@ -23,3 +23,6 @@
  */
 export { CodeEditor } from './CodeEditor'
 export type { CodeEditorProps } from './CodeEditor/props'
+
+export { CodeEditorV2 } from './CodeEditorV2'
+export type { CodeEditorV2Props } from './CodeEditorV2/props'

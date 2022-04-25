@@ -399,6 +399,18 @@ export type CodeEditorTheme = {
   operatorColor: Colors['textDarkest']
 }
 
+export type ColorPickerTheme = {
+  hashMarkColor: Colors['ash']
+  warningIconColor: Colors['fire']
+  errorIconColor: Colors['crimson']
+  successIconColor: Colors['shamrock']
+}
+
+export type ColorContrastTheme = {
+  successColor: Colors['shamrock']
+  failureColor: Colors['crimson']
+}
+
 export type DrawerLayoutContentTheme = {
   duration: Transitions['duration']
 }

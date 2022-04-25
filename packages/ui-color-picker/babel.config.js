@@ -22,24 +22,16 @@
  * SOFTWARE.
  */
 
-import Color from 'tinycolor2'
-
-/**
- * ---
- * category: utilities
- * ---
- * check the contrast ratio of 2 colors
- * @module contrast
- * @param {String} color1
- * @param {String} color2
- * @returns {Number} color contrast ratio
- */
-const contrast = (color1: string, color2: string): number => {
-  return Color.readability(color1, color2)
+module.exports = {
+  presets: [
+    [
+      '@instructure/ui-babel-preset',
+      {
+        coverage: Boolean(process.env.COVERAGE),
+        esModules: Boolean(process.env.ES_MODULES),
+        removeConsole: process.env.NODE_ENV === 'production',
+        transformImports: Boolean(process.env.TRANSFORM_IMPORTS)
+      }
+    ]
+  ]
 }
-
-const getContrast2Dec = (color1: string, color2: string): number => {
-  return Math.round(Color.readability(color1, color2) * 100) / 100
-}
-
-export { contrast, getContrast2Dec }

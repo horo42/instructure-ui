@@ -22,24 +22,41 @@
  * SOFTWARE.
  */
 
-import Color from 'tinycolor2'
+import PropTypes from 'prop-types'
+import type { WithStyleProps, ComponentStyle } from '@instructure/emotion'
 
-/**
- * ---
- * category: utilities
- * ---
- * check the contrast ratio of 2 colors
- * @module contrast
- * @param {String} color1
- * @param {String} color2
- * @returns {Number} color contrast ratio
- */
-const contrast = (color1: string, color2: string): number => {
-  return Color.readability(color1, color2)
+import type {
+  OtherHTMLAttributes,
+  PropValidators
+} from '@instructure/shared-types'
+import type { RGBAType } from '../props'
+
+type RGBAInputOwnProps = {
+  value: RGBAType
+  onChange: (rgba: RGBAType) => void
 }
 
-const getContrast2Dec = (color1: string, color2: string): number => {
-  return Math.round(Color.readability(color1, color2) * 100) / 100
+type RGBAInputState = {
+  value: RGBAType
 }
 
-export { contrast, getContrast2Dec }
+type PropKeys = keyof RGBAInputOwnProps
+
+type AllowedPropKeys = Readonly<Array<PropKeys>>
+
+type RGBAInputProps = RGBAInputOwnProps &
+  WithStyleProps<null, RGBAInputStyle> &
+  OtherHTMLAttributes<RGBAInputOwnProps>
+
+type RGBAInputStyle = ComponentStyle<
+  'RGBAInput' | 'rInput' | 'gInput' | 'bInput' | 'aInput'
+>
+const propTypes: PropValidators<PropKeys> = {
+  value: PropTypes.object,
+  onChange: PropTypes.func
+}
+
+const allowedProps: AllowedPropKeys = ['onChange', 'value']
+
+export type { RGBAInputProps, RGBAInputState, RGBAInputStyle }
+export { propTypes, allowedProps }

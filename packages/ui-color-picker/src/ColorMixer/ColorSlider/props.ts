@@ -22,24 +22,50 @@
  * SOFTWARE.
  */
 
-import Color from 'tinycolor2'
+import PropTypes from 'prop-types'
 
-/**
- * ---
- * category: utilities
- * ---
- * check the contrast ratio of 2 colors
- * @module contrast
- * @param {String} color1
- * @param {String} color2
- * @returns {Number} color contrast ratio
- */
-const contrast = (color1: string, color2: string): number => {
-  return Color.readability(color1, color2)
+import type {
+  OtherHTMLAttributes,
+  PropValidators
+} from '@instructure/shared-types'
+import type { RGBAType, RGBType } from '../props'
+
+type ColorSliderOwnProps = {
+  value: number
+  onChange: (hue: number) => void
+  width: number
+  height: number
+  indicatorRadius: number
 }
 
-const getContrast2Dec = (color1: string, color2: string): number => {
-  return Math.round(Color.readability(color1, color2) * 100) / 100
+type ColorSliderState = {
+  baseColor: number
+  internalColor: RGBType
+  value: number
 }
 
-export { contrast, getContrast2Dec }
+type PropKeys = keyof ColorSliderOwnProps
+
+type AllowedPropKeys = Readonly<Array<PropKeys>>
+
+type ColorSliderProps = ColorSliderOwnProps &
+  OtherHTMLAttributes<ColorSliderOwnProps>
+
+const propTypes: PropValidators<PropKeys> = {
+  value: PropTypes.object,
+  onChange: PropTypes.func,
+  width: PropTypes.number,
+  height: PropTypes.number,
+  indicatorRadius: PropTypes.number
+}
+
+const allowedProps: AllowedPropKeys = [
+  'onChange',
+  'value',
+  'width',
+  'height',
+  'indicatorRadius'
+]
+
+export type { ColorSliderProps, ColorSliderState }
+export { propTypes, allowedProps }

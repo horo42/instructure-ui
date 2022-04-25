@@ -22,24 +22,24 @@
  * SOFTWARE.
  */
 
-import Color from 'tinycolor2'
+import type { ColorMixerStyle } from './props'
 
 /**
  * ---
- * category: utilities
+ * private: true
  * ---
- * check the contrast ratio of 2 colors
- * @module contrast
- * @param {String} color1
- * @param {String} color2
- * @returns {Number} color contrast ratio
+ * Generates the style object from the theme and provided additional information
+ * @param  {Object} componentTheme The theme variable object.
+ * @param  {Object} props the props of the component, the style is applied to
+ * @param  {Object} state the state of the component, the style is applied to
+ * @return {Object} The final style object, which will be used in the component
  */
-const contrast = (color1: string, color2: string): number => {
-  return Color.readability(color1, color2)
+const generateStyle = (): ColorMixerStyle => {
+  return {
+    colorMixer: {
+      label: 'colorMixer'
+    }
+  }
 }
 
-const getContrast2Dec = (color1: string, color2: string): number => {
-  return Math.round(Color.readability(color1, color2) * 100) / 100
-}
-
-export { contrast, getContrast2Dec }
+export default generateStyle

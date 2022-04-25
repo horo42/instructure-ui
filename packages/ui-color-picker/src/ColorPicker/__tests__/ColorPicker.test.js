@@ -22,24 +22,17 @@
  * SOFTWARE.
  */
 
-import Color from 'tinycolor2'
+import React from 'react'
+import { expect, mount } from '@instructure/ui-test-utils'
 
-/**
- * ---
- * category: utilities
- * ---
- * check the contrast ratio of 2 colors
- * @module contrast
- * @param {String} color1
- * @param {String} color2
- * @returns {Number} color contrast ratio
- */
-const contrast = (color1: string, color2: string): number => {
-  return Color.readability(color1, color2)
-}
+import { ColorPicker } from '../index'
+import { ColorPickerLocator } from '../ColorPickerLocator'
 
-const getContrast2Dec = (color1: string, color2: string): number => {
-  return Math.round(Color.readability(color1, color2) * 100) / 100
-}
+describe('<ColorPicker />', async () => {
+  it('should render', async () => {
+    await mount(<ColorPicker />)
+    const component = ColorPickerLocator.find()
 
-export { contrast, getContrast2Dec }
+    expect(component).to.exist()
+  })
+})

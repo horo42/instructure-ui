@@ -157,6 +157,10 @@ type ColorPickerOwnProps = {
    * The width of the input.
    */
   width?: string
+  /**
+   * If true, alpha slider will be rendered. Deafults to false
+   */
+  withAlpha?: boolean
 }
 
 type ColorPickerState = {
@@ -199,7 +203,8 @@ const propTypes: PropValidators<PropKeys> = {
   simpleView: PropTypes.bool,
   tooltip: PropTypes.node,
   value: PropTypes.string,
-  width: PropTypes.string
+  width: PropTypes.string,
+  withAlpha: PropTypes.bool
 }
 
 const allowedProps: AllowedPropKeys = [

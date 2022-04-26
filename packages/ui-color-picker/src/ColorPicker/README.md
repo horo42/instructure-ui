@@ -18,21 +18,42 @@ class Example extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      selected: "",
-      colors: ['#ffffff', '#0CBF94', '#0C89BF00', '#BF0C6D', '#BF8D0C', '#ff0000', '#576A66', '#35423A', '#35423F']
+      value: "",
+      withAlpha:false
     }
   }
 
   render() {
-
+    const {value, withAlpha} = this.state
 
     return (
+      <div>
          <ColorPicker
+          value={value}
+          onChange={(value)=>this.setState({value})}
           label="Color Input"
           tooltip="This is an example"
           placeholderText="Enter HEX"
           simpleView={false}
+          withAlpha={withAlpha}
         />
+
+        <hr/>
+        <FormFieldGroup description="Settings">
+           <Checkbox
+            label="withAlpha"
+            value="small"
+            variant="toggle"
+            size="small"
+            inline
+            checked={withAlpha}
+            onChange={() => this.setState({
+              withAlpha: !withAlpha,
+              value:value.slice(0,6)
+            })}
+          />
+        </FormFieldGroup>
+      </div>
     );
   }
 }
@@ -62,7 +83,8 @@ class Example extends React.Component {
       disabled: false,
       isRequired: false,
       contrastAgainst: "#ffffff",
-      colors: ['#ffffff', '#0CBF94', '#0C89BF00', '#BF0C6D', '#BF8D0C', '#ff0000', '#576A66', '#35423A', '#35423F']
+      colors: ['#ffffff', '#0CBF94', '#0C89BF00', '#BF0C6D', '#BF8D0C', '#ff0000', '#576A66', '#35423A', '#35423F'],
+      withAlpha:false
     };
   }
 
@@ -74,18 +96,21 @@ class Example extends React.Component {
       contrastAgainst,
       disabled,
       isRequired,
+      withAlpha,
+      value
     } = this.state;
 
     return (
       <View as="div">
         <ColorPicker
           onChange={(value)=>this.setState({value})}
-          value={this.state.value}
+          value={value}
           placeholderText="Enter HEX"
           label="Color Input"
           tooltip="This is an example"
           disabled={disabled}
           isRequired={isRequired}
+          withAlpha={withAlpha}
           checkContrast={
             withCheckContrast
               ? {
@@ -123,7 +148,21 @@ class Example extends React.Component {
             size="small"
             inline
             checked={isRequired}
-            onChange={() => this.setState({ isRequired: !isRequired })}
+            onChange={() => this.setState({
+              isRequired: !isRequired
+              })}
+          />
+          <Checkbox
+            label="withAlpha"
+            value="small"
+            variant="toggle"
+            size="small"
+            inline
+            checked={withAlpha}
+            onChange={() => this.setState({
+              withAlpha: !withAlpha,
+              value:value.slice(0,6)
+            })}
           />
 
           <Checkbox

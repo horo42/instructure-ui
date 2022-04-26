@@ -55,6 +55,7 @@ type RGBAType = {
 type ColorMixerOwnProps = {
   value: string
   onChange: (rgba: string) => void
+  withAlpha: boolean
 }
 
 type ColorMixerState = {
@@ -74,7 +75,8 @@ type ColorMixerStyle = ComponentStyle<'colorMixer'>
 
 const propTypes: PropValidators<PropKeys> = {
   value: PropTypes.object,
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  withAlpha: PropTypes.bool
 }
 
 const allowedProps: AllowedPropKeys = ['onChange', 'value']

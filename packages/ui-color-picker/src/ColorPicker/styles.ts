@@ -67,7 +67,7 @@ const generateStyle = (
       label: 'colorPicker'
     },
     colorCircle: {
-      backgroundColor: hexCode,
+      backgroundColor: `#${hexCode}`,
       width: '1.5rem',
       height: '1.5rem',
       margin: 'auto',

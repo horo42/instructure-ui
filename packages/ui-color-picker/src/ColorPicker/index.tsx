@@ -92,7 +92,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
     super(props)
 
     this.state = {
-      hexCode: '#',
+      hexCode: '',
       showHelperErrorMessages: false,
       openColorPicker: false,
       mixedColor: ''
@@ -105,7 +105,8 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
     label: 'Color',
     checkContrast: false,
     simpleView: true,
-    width: '360px'
+    width: '360px',
+    withAlpha: false
   }
 
   ref: Element | null = null
@@ -186,14 +187,14 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
     }
     if (
       showHelperErrorMessages &&
-      hexCode !== '#' &&
+      hexCode !== '' &&
       !isValidHex &&
       typeof renderInvalidColorMessage === 'function'
     ) {
       invalidColorMessages = renderInvalidColorMessage(hexCode)
     }
 
-    if (isRequired && showHelperErrorMessages && hexCode === '#') {
+    if (isRequired && showHelperErrorMessages && hexCode === '') {
       isRequiredMessages =
         typeof renderIsRequiredMessage === 'function'
           ? renderIsRequiredMessage()
@@ -252,19 +253,19 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
   handleOnChange(event: React.ChangeEvent<HTMLInputElement>, value: string) {
     const { onChange } = this.props
     if (
-      value.length > 8 ||
+      value.length > (this.props.withAlpha ? 8 : 6) ||
       //TODO remove any
       !acceptedCharactersForHEX.includes((event.nativeEvent as any).data)
     ) {
       return
     }
     if (typeof onChange === 'function') {
-      onChange(`#${value}`)
+      onChange(`${value}`)
     } else {
       this.setState({
         showHelperErrorMessages: false,
-        hexCode: `#${value}`,
-        mixedColor: `#${value}`
+        hexCode: `${value}`,
+        mixedColor: `${value}`
       })
     }
   }
@@ -311,6 +312,9 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
     )
   }
 
+  stripAlphaIfNeeded = (hex: string) =>
+    hex.slice(-2) === 'FF' ? hex.slice(0, -2) : hex
+
   renderAddNewPresetButton = () => (
     <Popover
       renderTrigger={
@@ -339,6 +343,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
           onChange={(newColor: string) =>
             this.setState({ mixedColor: colorTohex8(newColor).slice(1) })
           }
+          withAlpha={this.props.withAlpha}
         />
         <div
           style={{
@@ -350,7 +355,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
         />
         <ColorContrast
           firstColor="#FFFFFF"
-          secondColor={`#${this.state.mixedColor}`}
+          secondColor={`#${this.stripAlphaIfNeeded(this.state.mixedColor)}`}
           label="Color Contrast Ratio"
           successLabel="PASS"
           failureLabel="FAIL"
@@ -373,7 +378,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
           onClick={() => {
             this.setState({
               openColorPicker: false,
-              hexCode: `#${this.state.mixedColor}`
+              hexCode: `${this.stripAlphaIfNeeded(this.state.mixedColor)}`
             })
           }}
           color="primary"
@@ -382,7 +387,12 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
           Add
         </Button>
         <Button
-          onClick={() => this.setState({ openColorPicker: false })}
+          onClick={() =>
+            this.setState({
+              openColorPicker: false,
+              mixedColor: this.state.hexCode
+            })
+          }
           color="secondary"
           margin="xx-small"
         >
@@ -407,7 +417,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
           themeOverride={{ padding: '0 0.75rem 0 0' }}
           renderAfterInput={this.renderAfterInput()}
           renderBeforeInput={this.renderBeforeInput()}
-          value={this.state.hexCode.slice(1)}
+          value={this.state.hexCode}
           onChange={(event, value) => this.handleOnChange(event, value)}
           onPaste={(event) => this.handleOnPaste(event)}
           onBlur={() => this.handleOnBlur()}

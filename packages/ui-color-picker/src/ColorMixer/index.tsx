@@ -54,6 +54,10 @@ class ColorMixer extends Component<ColorMixerProps, ColorMixerState> {
   }
   static readonly componentId = 'ColorMixer'
 
+  static defaultProps = {
+    withAlpha: false
+  }
+
   private width = 272
   private paletteHeight = 160
   private sliderHeight = 8
@@ -118,17 +122,20 @@ class ColorMixer extends Component<ColorMixerProps, ColorMixerState> {
             this.setState({ hue })
           }}
         />
-        <OpacitySlider
-          width={this.width}
-          height={this.sliderHeight}
-          indicatorRadius={this.sliderIndicatiorRadius}
-          color={rgb}
-          value={a}
-          onChange={this.onOpacityChange}
-        ></OpacitySlider>
+        {this.props.withAlpha && (
+          <OpacitySlider
+            width={this.width}
+            height={this.sliderHeight}
+            indicatorRadius={this.sliderIndicatiorRadius}
+            color={rgb}
+            value={a}
+            onChange={this.onOpacityChange}
+          ></OpacitySlider>
+        )}
         <RGBAInput
           value={hexToRgb(this.props.value)}
           onChange={(color) => this.props.onChange(colorTohex8(color))}
+          withAlpha={this.props.withAlpha}
         />
       </div>
     )

@@ -34,6 +34,7 @@ import type { RGBAType } from '../props'
 type RGBAInputOwnProps = {
   value: RGBAType
   onChange: (rgba: RGBAType) => void
+  withAlpha: boolean
 }
 
 type RGBAInputState = {
@@ -53,7 +54,8 @@ type RGBAInputStyle = ComponentStyle<
 >
 const propTypes: PropValidators<PropKeys> = {
   value: PropTypes.object,
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  withAlpha: PropTypes.bool
 }
 
 const allowedProps: AllowedPropKeys = ['onChange', 'value']

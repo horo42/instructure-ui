@@ -41,6 +41,10 @@ class RGBAInput extends Component<RGBAInputProps, RGBAInputState> {
     }
   }
 
+  static defaultProps = {
+    withAlpha: false
+  }
+
   componentDidMount() {
     this.props.makeStyles?.()
   }
@@ -93,14 +97,16 @@ class RGBAInput extends Component<RGBAInputProps, RGBAInputState> {
             renderLabel=""
           />
         </span>
-        <span css={this.props?.styles?.aInput}>
-          <TextInput
-            value={`${Math.round(this.state.value.a * 100)}`}
-            onChange={(e) => this.handleChange('a', e)}
-            renderAfterInput="%"
-            renderLabel=""
-          />
-        </span>
+        {this.props.withAlpha && (
+          <span css={this.props?.styles?.aInput}>
+            <TextInput
+              value={`${Math.round(this.state.value.a * 100)}`}
+              onChange={(e) => this.handleChange('a', e)}
+              renderAfterInput="%"
+              renderLabel=""
+            />
+          </span>
+        )}
       </div>
     )
   }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { tags } from '@codemirror/highlight'
+import { tags } from '@lezer/highlight'
 
 import type { CodeEditorTheme } from '@instructure/shared-types'
 import type { CodeEditorV2Props, CodeEditorV2Style } from './props'
@@ -46,7 +46,8 @@ const generateStyle = (
     top: {
       borderBottomLeftRadius: 0,
       borderBottomRightRadius: 0,
-      marginTop: '0.25rem'
+      marginTop: '0.25rem',
+      marginBottom: 0
     },
     bottom: {
       borderTopLeftRadius: 0,
@@ -56,6 +57,14 @@ const generateStyle = (
   }
 
   return {
+    codeEditorContainer: {
+      label: 'codeEditorContainer',
+      borderRadius: componentTheme.borderRadius,
+      border: componentTheme.border,
+      marginBottom: '1rem',
+      overflow: 'hidden',
+      ...(attachment && attachmentVariants[attachment])
+    },
     theme: {
       '&': {
         direction: 'ltr',
@@ -65,13 +74,12 @@ const generateStyle = (
         height: 'auto',
         fontFamily: componentTheme.fontFamily,
         fontSize: componentTheme.fontSize,
-        borderRadius: componentTheme.borderRadius,
-        border: componentTheme.border,
+        margin: 0,
+        borderRadius: 0,
+        border: 0,
         color: componentTheme.color,
         lineHeight: 1.4375,
-        minHeight: '1.4375rem',
-        marginBottom: '1rem',
-        ...(attachment && attachmentVariants[attachment])
+        minHeight: '1.4375rem'
       },
 
       '.cm-lines': {
@@ -94,7 +102,10 @@ const generateStyle = (
       },
       { tag: tags.atom, color: componentTheme.atomColor },
       { tag: tags.number, color: componentTheme.numberColor },
-      { tag: tags.definition, color: componentTheme.defColor },
+      {
+        tag: tags.definition(tags.variableName),
+        color: componentTheme.defColor
+      },
       { tag: tags.tagName, color: componentTheme.tagColor },
       {
         tag: [tags.typeName, tags.namespace],

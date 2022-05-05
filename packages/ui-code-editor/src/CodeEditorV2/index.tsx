@@ -24,9 +24,9 @@
 
 /** @jsx jsx */
 import { Component } from 'react'
-import { merge, cloneDeep } from 'lodash'
+import { merge, cloneDeep, isEqual } from 'lodash'
 
-import { EditorState, StateEffect } from '@codemirror/state'
+import { EditorSelection, EditorState, StateEffect } from '@codemirror/state'
 import type { Transaction, TransactionSpec } from '@codemirror/state'
 import {
   EditorView,
@@ -34,28 +34,39 @@ import {
   highlightActiveLine,
   drawSelection,
   dropCursor,
+  rectangularSelection,
+  crosshairCursor,
+  lineNumbers,
+  highlightActiveLineGutter,
   keymap
 } from '@codemirror/view'
-import { lineNumbers, highlightActiveLineGutter } from '@codemirror/gutter'
-import { foldGutter, foldKeymap } from '@codemirror/fold'
-import { defaultHighlightStyle } from '@codemirror/highlight'
-import { history, historyKeymap } from '@codemirror/history'
-import { bracketMatching } from '@codemirror/matchbrackets'
-import { closeBrackets, closeBracketsKeymap } from '@codemirror/closebrackets'
-import { autocompletion, completionKeymap } from '@codemirror/autocomplete'
+import type { KeyBinding } from '@codemirror/view'
 import {
-  rectangularSelection,
-  crosshairCursor
-} from '@codemirror/rectangular-selection'
+  autocompletion,
+  completionKeymap,
+  closeBrackets,
+  closeBracketsKeymap
+} from '@codemirror/autocomplete'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import {
   indentSelection,
   defaultKeymap,
-  indentWithTab
+  indentWithTab,
+  history,
+  historyKeymap
 } from '@codemirror/commands'
-import { commentKeymap } from '@codemirror/comment'
 import { lintKeymap } from '@codemirror/lint'
-import { indentOnInput, indentUnit } from '@codemirror/language'
+import {
+  indentOnInput,
+  indentUnit,
+  StreamLanguage,
+  bracketMatching,
+  foldGutter,
+  foldKeymap,
+  defaultHighlightStyle,
+  syntaxHighlighting,
+  HighlightStyle
+} from '@codemirror/language'
 import { javascript } from '@codemirror/lang-javascript'
 import { html } from '@codemirror/lang-html'
 import { css } from '@codemirror/lang-css'
@@ -63,16 +74,15 @@ import { markdown } from '@codemirror/lang-markdown'
 import { json } from '@codemirror/lang-json'
 import { shell } from '@codemirror/legacy-modes/mode/shell'
 import { yaml } from '@codemirror/legacy-modes/mode/yaml'
-import { StreamLanguage } from '@codemirror/stream-parser'
+import { oneDarkTheme, oneDarkHighlightStyle } from '@codemirror/theme-one-dark'
 
 import { testable } from '@instructure/ui-testable'
-import { debounce } from '@instructure/debounce'
-import type { Debounced } from '@instructure/debounce'
 import { withDeterministicId } from '@instructure/ui-react-utils'
 import { requestAnimationFrame } from '@instructure/ui-dom-utils'
 import type { RequestAnimationFrameType } from '@instructure/ui-dom-utils'
 
 import { ScreenReaderContent } from '@instructure/ui-a11y-content'
+import { textDirectionContextConsumer } from '@instructure/ui-i18n'
 
 import { withStyle, jsx } from '@instructure/emotion'
 
@@ -92,6 +102,7 @@ category: components
 **/
 @withDeterministicId()
 @withStyle(generateStyle, generateComponentTheme)
+@textDirectionContextConsumer()
 @testable()
 class CodeEditorV2 extends Component<CodeEditorV2Props> {
   static readonly componentId = 'CodeEditorV2'
@@ -100,19 +111,20 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
   static allowedProps = allowedProps
   static defaultProps = {
     language: 'jsx',
+    readOnly: false,
+    editable: true,
     lineNumbers: false,
-    highlightActiveLine: true,
-    highlightActiveLineGutter: false,
     foldGutter: false,
+    highlightActiveLine: false,
+    highlightActiveLineGutter: false,
     lineWrapping: false,
     autofocus: false,
     spellcheck: false,
-    direction: 'ltr',
-    rtlMoveVisually: false,
+    rtlMoveVisually: true,
     indentOnLoad: false,
-    indentOnInput: true,
     indentWithTab: false,
-    value: ''
+    darkTheme: false,
+    defaultValue: ''
   }
 
   private readonly _id: string
@@ -123,6 +135,8 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
   private _editorView?: EditorView
 
   private _raf: RequestAnimationFrameType[] = []
+
+  private _newSelectionAfterValueChange?: EditorSelection
 
   handleRef = (el: HTMLDivElement | null) => {
     const { elementRef } = this.props
@@ -144,12 +158,21 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
     }
   }
 
+  private addAnimationFrame(callback?: FrameRequestCallback) {
+    if (typeof callback === 'function') {
+      this._raf.push(requestAnimationFrame(callback))
+    }
+  }
+
+  private cancelAnimationFrames() {
+    this._raf.forEach((request) => request.cancel())
+    this._raf = []
+  }
+
   public focus() {
-    this._raf.push(
-      requestAnimationFrame(() => {
-        this._editorView?.focus()
-      })
-    )
+    this.addAnimationFrame(() => {
+      this._editorView?.focus()
+    })
   }
 
   public get hasFocus() {
@@ -158,39 +181,45 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
 
   public selectAll() {
     if (this._editorView) {
-      this.dispatchViewSelection({
-        anchor: 0,
-        head: this.currentDocValue?.length
+      this.addAnimationFrame(() => {
+        this.dispatchViewSelection({
+          anchor: 0,
+          head: this.currentDocValue?.length
+        })
       })
     }
   }
 
   public deselectAll() {
     if (this._editorView) {
-      this.dispatchViewSelection({
-        anchor: 0,
-        head: 0
+      this.addAnimationFrame(() => {
+        this.dispatchViewSelection({
+          anchor: 0,
+          head: 0
+        })
       })
     }
   }
 
+  public indentCurrentSelection() {
+    this.addAnimationFrame(() => {
+      if (this._editorView) {
+        indentSelection({
+          state: this._editorView.state,
+          dispatch: (transaction) => {
+            this._editorView?.update([transaction])
+          }
+        })
+      }
+    })
+  }
+
   public indentAll() {
-    this._raf.push(
-      requestAnimationFrame(() => {
-        if (this._editorView) {
-          this.selectAll()
-
-          indentSelection({
-            state: this._editorView.state,
-            dispatch: (transaction) => {
-              this._editorView?.update([transaction])
-            }
-          })
-
-          this.deselectAll()
-        }
-      })
-    )
+    this.addAnimationFrame(() => {
+      this.selectAll()
+      this.indentCurrentSelection()
+      this.deselectAll()
+    })
   }
 
   // Attach state effects
@@ -201,10 +230,16 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
   }
 
   // Dispatch changes to the document
-  private dispatchViewChanges(changes?: TransactionSpec['changes']) {
+  private dispatchViewChanges(
+    changes?: TransactionSpec['changes'],
+    selection?: EditorSelection
+  ) {
     if (!this._editorView || !changes) return
 
-    this._editorView.dispatch({ changes })
+    this._editorView.dispatch({
+      changes,
+      ...(selection ? { selection } : undefined)
+    })
   }
 
   // Select a portion of the document
@@ -218,20 +253,23 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
     return this._editorView?.state.doc
   }
 
+  // when value is passed, the editor should be controlled
+  get isControlled() {
+    return typeof this.props.value === 'string'
+  }
+
   constructor(props: CodeEditorV2Props) {
     super(props)
     this._id = props.deterministicId!()
-
-    this.refreshEditorValue = debounce(this.refreshEditorValue)
   }
 
   componentDidMount() {
-    const { value, autofocus, indentOnLoad } = this.props
+    const { value, defaultValue, autofocus, indentOnLoad } = this.props
 
     this.props.makeStyles?.()
 
     const state = EditorState.create({
-      doc: value,
+      doc: value || defaultValue,
       extensions: this.extensions
     })
     this._editorView = new EditorView({
@@ -251,33 +289,27 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
   componentWillUnmount() {
     this._editorView = undefined
 
-    this._raf.forEach((request) => request.cancel())
-    this._raf = []
-    ;(this.refreshEditorValue as Debounced).cancel()
+    this.cancelAnimationFrames()
   }
 
   componentDidUpdate(prevProps: CodeEditorV2Props) {
-    const { value, indentOnLoad } = this.props
-
     this.props.makeStyles?.()
 
     if (this._editorView) {
-      if (value !== prevProps.value) {
-        this.refreshEditorValue(value)
-
-        if (indentOnLoad) {
-          this.indentAll()
-        }
+      if (this.props.value !== prevProps.value) {
+        this.refreshEditorValue()
       }
 
-      if (this.shouldUpdateEditor(prevProps)) {
+      if (this.shouldUpdateExtensions(prevProps)) {
         this.refreshExtensions()
       }
     }
   }
 
-  shouldUpdateEditor(prevProps: CodeEditorV2Props) {
+  private shouldUpdateExtensions(prevProps: CodeEditorV2Props) {
     const propsToObserve: (keyof CodeEditorV2Props)[] = [
+      'styles', // needed for theme update
+      'themeOverride',
       'language',
       'readOnly',
       'editable',
@@ -288,22 +320,29 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
       'autofocus',
       'spellcheck',
       'direction',
+      'dir',
       'rtlMoveVisually',
       'indentOnLoad',
-      'indentOnInput',
       'indentWithTab',
       'indentUnit',
       'highlightActiveLine',
-      'attachment'
+      'attachment',
+      'darkTheme'
     ]
 
     for (const prop of propsToObserve) {
-      if (this.props[prop] !== prevProps[prop]) {
+      if (!isEqual(this.props[prop], prevProps[prop])) {
         return true
       }
     }
 
     return false
+  }
+
+  get direction() {
+    // comes from the `direction` prop and
+    // falls back to the `dir` prop coming from the bidirectional decorator
+    return this.props.direction || this.props.dir
   }
 
   get extensions() {
@@ -343,13 +382,12 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
     if (this.props.spellcheck) {
       extensions.push(EditorView.contentAttributes.of({ spellcheck: 'true' }))
     }
-    if (this.props.direction) {
+    if (this.direction) {
       extensions.push(
-        EditorView.contentAttributes.of({ dir: this.props.direction })
+        EditorView.contentAttributes.of({
+          dir: this.direction
+        })
       )
-    }
-    if (this.props.indentOnInput) {
-      extensions.push(indentOnInput())
     }
     if (this.props.indentUnit) {
       extensions.push(indentUnit.of(this.props.indentUnit))
@@ -369,26 +407,26 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
       drawSelection(),
       dropCursor(),
       EditorState.allowMultipleSelections.of(true),
-      defaultHighlightStyle.fallback,
+      syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       bracketMatching(),
       closeBrackets(),
       autocompletion(),
       rectangularSelection(),
       crosshairCursor(),
       highlightSelectionMatches(),
+      indentOnInput(),
 
       keymap.of(this.keymaps)
     ]
   }
 
-  get keymaps() {
-    const keymaps = [
+  get keymaps(): KeyBinding[] {
+    const keymaps: KeyBinding[] = [
       ...closeBracketsKeymap,
       ...this.commandKeybinding,
       ...searchKeymap,
       ...historyKeymap,
       ...foldKeymap,
-      ...commentKeymap,
       ...completionKeymap,
       ...lintKeymap
     ]
@@ -401,18 +439,21 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
   }
 
   get commandKeybinding() {
-    const { direction, rtlMoveVisually } = this.props
+    const { rtlMoveVisually } = this.props
 
-    if (direction === 'rtl' && rtlMoveVisually) {
+    if (this.direction === 'rtl' && !rtlMoveVisually) {
       // we need to clone the original so that it doesn't get overridden
-      return merge(cloneDeep(defaultKeymap), rtlHorizontalArrowKeymap)
+      return merge(
+        cloneDeep(defaultKeymap),
+        rtlHorizontalArrowKeymap
+      ) as KeyBinding[]
     }
 
     return defaultKeymap
   }
 
   get themeExtension() {
-    const { styles } = this.props
+    const { styles, darkTheme } = this.props
 
     if (!styles?.theme || !styles.highlightStyle) {
       return
@@ -421,8 +462,29 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
     // const theme = EditorView.theme(styles?.theme)
     // const highlightStyle = HighlightStyle.define(styles?.highlightStyle)
 
-    const theme = EditorView.baseTheme(styles?.theme)
-    const highlightStyle = defaultHighlightStyle
+    let theme = EditorView.baseTheme(styles?.theme)
+    let highlightStyle = syntaxHighlighting(defaultHighlightStyle)
+
+    if ((this.props.themeOverride as Record<any, any>).background) {
+      theme = EditorView.theme({
+        ...styles?.theme,
+        ...this.props.themeOverride
+      })
+    }
+
+    if (
+      (this.props.themeOverride as Record<any, any>).instColors &&
+      !darkTheme
+    ) {
+      highlightStyle = syntaxHighlighting(
+        HighlightStyle.define(styles?.highlightStyle)
+      )
+    }
+
+    if (darkTheme) {
+      theme = oneDarkTheme
+      highlightStyle = syntaxHighlighting(oneDarkHighlightStyle)
+    }
 
     return [theme, highlightStyle]
   }
@@ -455,26 +517,39 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
     }
   }
 
-  get onChangeExtension() {
-    const { onChange } = this.props
+  callOnChangeHandler(newValue: string) {
+    const { onChange, value } = this.props
 
+    this.addAnimationFrame(() => {
+      if (typeof onChange === 'function' && newValue !== value) {
+        onChange(newValue)
+      }
+    })
+  }
+
+  get onChangeExtension() {
     return EditorState.changeFilter.of((transaction: Transaction) => {
       if (!this._editorView) {
         return false
       }
 
       if (transaction.docChanged) {
-        this._raf.push(
-          requestAnimationFrame(() => {
-            const { value } = this.props
-            const newDoc = transaction.newDoc.toString()
+        const newDoc = transaction.newDoc.toString()
 
-            // we call onChange in controlled and uncontrolled mode too
-            if (typeof onChange === 'function' && newDoc !== value) {
-              onChange(newDoc)
-            }
-          })
-        )
+        if (this.isControlled) {
+          // the value will be changed by the onChange handler,
+          // refreshEditorValue has to run first
+          if (newDoc !== this.props.value) {
+            this._newSelectionAfterValueChange = transaction.selection
+            this.cancelAnimationFrames()
+            this.callOnChangeHandler(newDoc)
+            return false
+          } else {
+            return true
+          }
+        } else {
+          this.callOnChangeHandler(newDoc)
+        }
       }
 
       return true
@@ -499,28 +574,41 @@ class CodeEditorV2 extends Component<CodeEditorV2Props> {
     this.dispatchViewEffects(StateEffect.reconfigure.of(this.extensions))
   }
 
-  refreshEditorValue(value: CodeEditorV2Props['value']) {
+  refreshEditorValue() {
     if (!this._editorView) return
 
-    const currentValue = this.currentDocValue!.toString()
+    const { value } = this.props
 
-    if (currentValue !== value) {
-      this.dispatchViewChanges({
-        from: 0,
-        to: currentValue.length,
-        insert: value || ''
-      })
+    const currentValue = this._editorView.state.doc!.toString()
+
+    if (value && currentValue !== value) {
+      this.dispatchViewChanges(
+        {
+          from: 0,
+          to: currentValue.length,
+          insert: value || ''
+        },
+        this._newSelectionAfterValueChange
+      )
+      this._newSelectionAfterValueChange = undefined
+    }
+
+    if (this.props.indentOnLoad) {
+      this.indentAll()
     }
   }
 
   render() {
-    const { label } = this.props
+    const { label, styles } = this.props
 
     return (
       <div ref={this.handleRef}>
         <label htmlFor={this._id}>
           <ScreenReaderContent>{label}</ScreenReaderContent>
-          <div ref={this.handleContainerRef} />
+          <div
+            ref={this.handleContainerRef}
+            css={styles?.codeEditorContainer}
+          />
         </label>
       </div>
     )

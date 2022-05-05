@@ -46,8 +46,9 @@ import {
   selectSyntaxLeft,
   selectSyntaxRight
 } from '@codemirror/commands'
+import type { KeyBinding } from '@codemirror/view'
 
-const rtlHorizontalArrowKeymap = [
+const rtlHorizontalArrowKeymap: KeyBinding[] = [
   // Left/Start/Forward
   {
     key: 'ArrowLeft',

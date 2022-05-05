@@ -24,15 +24,22 @@
 
 import PropTypes from 'prop-types'
 
-import type { TagStyle } from '@codemirror/highlight'
+import type { TagStyle } from '@codemirror/language'
+
+import { controllable } from '@instructure/ui-prop-types'
 
 import type {
   PropValidators,
   CodeEditorTheme,
   OtherHTMLAttributes
 } from '@instructure/shared-types'
-import type { WithStyleProps, StyleObject } from '@instructure/emotion'
+import type {
+  WithStyleProps,
+  StyleObject,
+  ComponentStyle
+} from '@instructure/emotion'
 import type { WithDeterministicIdProps } from '@instructure/ui-react-utils'
+import type { BidirectionalProps } from '@instructure/ui-i18n'
 
 type CodeEditorV2OwnProps = {
   /**
@@ -81,9 +88,9 @@ type CodeEditorV2OwnProps = {
   lineNumbers?: boolean
 
   /**
-   * Highlights the lines that have a cursor on them
+   * Whether to show a fold status indicator before foldable lines (which can be clicked to fold or unfold the line)
    */
-  highlightActiveLine?: boolean
+  foldGutter?: boolean
 
   /**
    * Whether to highlight gutter elements on the active line (visible only when a gutter is visible)
@@ -91,9 +98,9 @@ type CodeEditorV2OwnProps = {
   highlightActiveLineGutter?: boolean
 
   /**
-   * Whether to show a fold status indicator before foldable lines (which can be clicked to fold or unfold the line)
+   * Highlights the lines that have a cursor on them
    */
-  foldGutter?: boolean
+  highlightActiveLine?: boolean
 
   /**
    * Whether it should scroll or wrap for long lines. Defaults to false (scroll)
@@ -106,20 +113,15 @@ type CodeEditorV2OwnProps = {
   autofocus?: boolean
 
   /**
-   * Whether spellcheck will be enabled
+   * Whether spellcheck will be enabled on the input
    */
   spellcheck?: boolean
 
   /**
    * Whether the editor should auto-indent the code on this initial load
-   * and when the `value` is changed from the outside
+   * and when the `value` is changed
    */
   indentOnLoad?: boolean
-
-  /**
-   * Enables reindentation on input
-   */
-  indentOnInput?: boolean
 
   /**
    * When this feature is on, Tab and Shift-Tab will indent the code. By default, it is turned off, and tabbing will focus the next element in the tab order.
@@ -148,7 +150,13 @@ type CodeEditorV2OwnProps = {
   rtlMoveVisually?: boolean
 
   /**
-   * The selected value
+   * The default value of the editor (in uncontrolled mode)
+   */
+  defaultValue?: string
+
+  /**
+   * The selected value for the controlled version
+   * (needs an onChange handler to work)
    */
   value?: string
 
@@ -173,9 +181,11 @@ type CodeEditorV2OwnProps = {
   onBlur?: () => void
 
   /**
-   * Sets minor visual styles  (border radius & top/bottom margin)
+   * Sets minor visual styles (border radius & top/bottom margin)
    */
   attachment?: 'bottom' | 'top'
+
+  darkTheme?: boolean
 
   /**
    * provides a reference to the underlying html root element
@@ -199,10 +209,11 @@ type CodeEditorV2Props = CodeEditorV2OwnProps &
     // but isn't used for the css prop anyway
     Record<keyof CodeEditorV2Style, any>
   > &
+  BidirectionalProps &
   OtherHTMLAttributes<CodeEditorV2OwnProps> &
   WithDeterministicIdProps
 
-type CodeEditorV2Style = {
+type CodeEditorV2Style = ComponentStyle<'codeEditorContainer'> & {
   theme: StyleObject
   highlightStyle: TagStyle[]
 }
@@ -226,23 +237,24 @@ const propTypes: PropValidators<PropKeys> = {
   readOnly: PropTypes.bool,
   editable: PropTypes.bool,
   lineNumbers: PropTypes.bool,
-  highlightActiveLine: PropTypes.bool,
-  highlightActiveLineGutter: PropTypes.bool,
   foldGutter: PropTypes.bool,
+  highlightActiveLineGutter: PropTypes.bool,
+  highlightActiveLine: PropTypes.bool,
   lineWrapping: PropTypes.bool,
   autofocus: PropTypes.bool,
   spellcheck: PropTypes.bool,
   direction: PropTypes.oneOf(['ltr', 'rtl']),
   rtlMoveVisually: PropTypes.bool,
   indentOnLoad: PropTypes.bool,
-  indentOnInput: PropTypes.bool,
   indentWithTab: PropTypes.bool,
   indentUnit: PropTypes.string,
-  value: PropTypes.string,
+  defaultValue: PropTypes.string,
+  value: controllable(PropTypes.string, 'onChange', 'defaultValue'),
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
   attachment: PropTypes.oneOf(['bottom', 'top']),
+  darkTheme: PropTypes.bool,
   elementRef: PropTypes.func,
   containerRef: PropTypes.func
 }
@@ -253,23 +265,24 @@ const allowedProps: AllowedPropKeys = [
   'readOnly',
   'editable',
   'lineNumbers',
-  'highlightActiveLine',
-  'highlightActiveLineGutter',
   'foldGutter',
+  'highlightActiveLineGutter',
+  'highlightActiveLine',
   'lineWrapping',
   'autofocus',
   'spellcheck',
   'direction',
   'rtlMoveVisually',
   'indentOnLoad',
-  'indentOnInput',
   'indentWithTab',
   'indentUnit',
+  'defaultValue',
   'value',
   'onChange',
   'onFocus',
   'onBlur',
   'attachment',
+  'darkTheme',
   'elementRef',
   'containerRef'
 ]

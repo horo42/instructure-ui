@@ -4,22 +4,17 @@ describes: CodeEditor
 
 A wrapper around the popular [CodeMirror](https://codemirror.net/) text editor.
 
-### json
+### A11y test
 
 ```js
 ---
 example: true
+render: false
+background: light
 ---
-<CodeEditorV2
-  label='json code editor'
-  lineNumbers
-  lineWrapping
-  highlightActiveLine
-  highlightActiveLineGutter
-  foldGutter
-  spellcheck
-  language="json"
-  value={`{
+
+const languages = {
+  json: `{
   "name": "@instructure/ui-code-editor",
   "version": "8.24.2",
   "description": "A UI component library made by Instructure Inc.",
@@ -31,26 +26,311 @@ example: true
     "type": "git",
     "url": "https://github.com/instructure/instructure-ui.git"
   },
-}`}
-/>
+}`,
+  javascript: `const fruit: string = "apple"
+
+function exampleMethod(props: Props) {
+  return props ? props.value : null
+}
+
+/**
+ * This is an example
+ * @param {Object} props
+ */
+const Example = () => {
+  return (
+    <View as="div" padding={'large'}>
+      <Position
+        renderTarget={<GoodComponent />}
+        placement='end center'
+        offsetX='20px'
+      >
+        <span style={{ padding: '8px', background: 'white' }}>
+          Positioned content
+        </span>
+      </Position>
+    </View>
+  )
+}
+
+render(<Example />)`,
+  html: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example app</title>
+  </head>
+  <body>
+    <div id="app">
+      <button onclick="myFunction()">Click me</button>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>`,
+  css: `a {
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+a:link, a:visited, a:hover, a:active {
+  background-color: green;
+  color: white;
+  padding: 10px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.centertext { text-align: center; }
+
+img { opacity: 0.5; filter: alpha(opacity=50); }`,
+  markdown: `#### The quarterly results look great!
+
+> - Revenue was off the chart.
+> - Profits were higher than ever.
+
+*Everything* is going according to **plan**.
+
+---
+example: true
+---`,
+  shell: `#!/bin/bash
+
+# example of using arguments to a script
+echo "My first name is $1"
+echo "My surname is $2"
+echo "Total number of arguments is $#"
+
+________________________________________
+
+$ chmod a+x name.sh
+$ ./name.sh Hans-Wolfgang Loidl
+My first name is Hans-Wolfgang
+My surname is Loidl
+Total number of arguments is 2`,
+  yml: `---
+ doe: "a deer, a female deer"
+ ray: "a drop of golden sun"
+ pi: 3.14159
+ xmas: true
+ french-hens: 3
+ calling-birds:
+   - huey
+   - dewey
+   - louie
+   - fred
+ xmas-fifth-day:
+   calling-birds: four
+   french-hens: 3
+   golden-rings: 5
+   partridges:
+     count: 1
+     location: "a pear tree"
+   turtle-doves: two`
+}
+
+class ColorExamples extends React.Component {
+  state = {
+    lineNumbers: true,
+    editable: true,
+    readOnly: false,
+    indentWithTab: false,
+    spellcheck: true,
+    rtlMoveVisually: true,
+    theme: 'light'
+  }
+
+  render() {
+    const booleanProps = ['lineNumbers', 'editable', 'readOnly', 'indentWithTab', 'spellcheck', 'rtlMoveVisually']
+    const booleanPropsState = {}
+    booleanProps.forEach(prop => { booleanPropsState[prop] = this.state[prop] })
+
+    return (
+      <View as="div" padding='medium' background='primary'>
+        <View as="div" padding='small'>
+          <FormFieldGroup
+            description='Settings'
+            name='Settings'
+            rowSpacing='small'
+            layout='columns'
+            vAlign='top'
+          >
+            <RadioInputGroup
+              name="theme"
+              value={this.state.theme}
+              description="Theme"
+              onChange={(e, theme) => {
+                this.setState({theme})
+              }}
+            >
+              <RadioInput value="light" label="CodeMirror light theme" />
+              <RadioInput value="dark" label="CodeMirror dark theme" />
+              <RadioInput value="instui" label="InstUI light theme" />
+              <RadioInput value="instuiWB" label="InstUI light theme (white Bg.)" />
+            </RadioInputGroup>
+
+            <FormFieldGroup
+              description='Other'
+              name='other'
+              rowSpacing='small'
+            >
+              {booleanProps.map(prop => (
+                <Checkbox
+                  label={prop}
+                  key={prop}
+                  defaultChecked={this.state[prop]}
+                  onChange={() => {
+                    this.setState({ [prop]: !this.state[prop] })
+                  }}
+                />
+              ))}
+            </FormFieldGroup>
+
+          </FormFieldGroup>
+        </View>
+
+        {Object.entries(languages).map(([key, value]) => {
+          return (
+            <View as="div" margin='medium 0' key={key}>
+              <Heading level='h3' margin='0 0 small'>
+                {key}
+              </Heading>
+              <CodeEditorV2
+                label={`${key} code editor`}
+                language={key}
+                defaultValue={value}
+                lineWrapping
+                highlightActiveLine
+                highlightActiveLineGutter
+                {...booleanPropsState}
+                {...this.state.lineNumbers && {
+                  lineNumbers: true,
+                  foldGutter: true,
+                }}
+                darkTheme={this.state.theme === 'dark'}
+                themeOverride={{
+                  ...(this.state.theme === 'instuiWB' && { background: 'white' }),
+                  ...(this.state.theme.includes('instui') && { instColors: 'true' })
+                }}
+              />
+            </View>
+          )
+        })}
+      </View>
+    )
+  }
+}
+
+render(<ColorExamples />)
+
 ```
 
-### javascript
+### Editable and readOnly
+
+The editability of the content can be set with the combination of the `editable` and `readOnly` props.
+
+The `readOnly` prop works like a "preventDefault" and disables any interaction by the user or API calls (e.g. copy-paste).
+If the `editable` prop is set to `false`, the editor is also not focusable, and the `contenteditable="false"` is set on the content.
 
 ```js
 ---
 example: true
+render: false
+background: light
 ---
-<CodeEditorV2
-  label='javascript code editor'
-  lineNumbers
-  lineWrapping
-  highlightActiveLine
-  highlightActiveLineGutter
-  foldGutter
-  spellcheck
-  language="javascript"
-  value={`const fruit: string = "apple"
+class EditableExample extends React.Component {
+  state = {
+    editable: true,
+    readOnly: false
+  }
+
+  render () {
+    return (
+      <View display="block" padding="medium medium small" background="primary">
+        <View display="block" margin="small none large">
+          <FormFieldGroup description="Settings" rowSpacing="small">
+            {['editable', 'readOnly'].map((prop) => (
+              <Checkbox
+                label={prop}
+                key={prop}
+                defaultChecked={this.state[prop]}
+                onChange={() => {
+                  this.setState({ [prop]: !this.state[prop] })
+                }}
+              />
+            ))}
+          </FormFieldGroup>
+        </View>
+
+        <CodeEditorV2
+          label='editable code editor'
+          language="jsx"
+          editable={this.state.editable}
+          readOnly={this.state.readOnly}
+          defaultValue={`function example() {
+  console.log('example')
+}`}
+        />
+      </View>
+    )
+  }
+}
+
+
+
+render(<EditableExample />)
+```
+
+### Gutter settings
+
+The `lineNumbers` prop displays the line numbers in the side gutter, and the `foldGutter` prop displays the toggleable fold icon next to foldable code blocks.
+
+If any of these two props are active, the gutter is displayed, and the `highlightActiveLineGutter` highlights the active line in the gutter. (The `highlightActiveLine` prop highlights the line itself.)
+
+```js
+---
+example: true
+render: false
+background: light
+---
+class GutterExample extends React.Component {
+  state = {
+    lineNumbers: true,
+    foldGutter: true,
+    highlightActiveLineGutter: true,
+    highlightActiveLine: true,
+  }
+
+  render () {
+    return (
+      <View display="block" padding="medium medium small" background="primary">
+        <View display="block" margin="small none large">
+          <FormFieldGroup description="Settings" rowSpacing="small">
+            {['lineNumbers', 'foldGutter', 'highlightActiveLineGutter', 'highlightActiveLine'].map((prop) => (
+              <Checkbox
+                label={prop}
+                key={prop}
+                defaultChecked={this.state[prop]}
+                onChange={() => {
+                  this.setState({ [prop]: !this.state[prop] })
+                }}
+              />
+            ))}
+          </FormFieldGroup>
+        </View>
+
+        <CodeEditorV2
+          label='gutter example'
+          language="jsx"
+          lineNumbers={this.state.lineNumbers}
+          foldGutter={this.state.foldGutter}
+          highlightActiveLineGutter={this.state.highlightActiveLineGutter}
+          highlightActiveLine={this.state.highlightActiveLine}
+          defaultValue={`const fruit: string = "apple"
 
 function exampleMethod(props: Props) {
   return props ? props.value : null
@@ -77,174 +357,339 @@ const Example = () => {
 }
 
 render(<Example />)`}
-/>
-```
-
-### html
-
-```js
----
-example: true
----
-<CodeEditorV2
-  label='html code editor'
-  lineNumbers
-  lineWrapping
-  highlightActiveLine
-  highlightActiveLineGutter
-  foldGutter
-  spellcheck
-  language="html"
-  value={`<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Example app</title>
-  </head>
-  <body>
-    <div id="app">
-      <button onclick="myFunction()">Click me</button>
-    </div>
-
-    <script src="script.js"></script>
-  </body>
-</html>`}
-/>
-```
-
-### css
-
-```js
----
-example: true
----
-<CodeEditorV2
-  label='css code editor'
-  lineNumbers
-  lineWrapping
-  highlightActiveLine
-  highlightActiveLineGutter
-  foldGutter
-  spellcheck
-  language="css"
-  value={`a {
-  text-decoration: none;
-
-  &:hover { text-decoration: underline; }
+        />
+      </View>
+    )
+  }
 }
 
-a:link, a:visited, a:hover, a:active {
-  background-color: green;
-  color: white;
-  padding: 10px 25px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
+
+
+render(<GutterExample />)
+```
+
+### Indentation
+
+##### auto-indent
+
+The editor automatically indents the lines on input. The `indentOnLoad` prop indents the code on the initial load and when the `value` prop is updated.
+
+##### indent with tab
+
+When the `indentWithTab` feature is turned on, Tab and Shift-Tab will indent the code.
+By default, it is turned off, and tabbing will focus the next element in the tab order.
+
+**Accessibility note**: Even if `indentWithTab` is on, pressing Escape before tabbing will not handle indentation and will handle focus instead. When using this feature, it is recommended to add info about this behaviour in your documentation.
+
+##### indent unit
+
+You can also override the unit by which indentation happens (defaults to 2 spaces).
+The `indentUnitCount` prop should be a string consisting either entirely of spaces or entirely of tabs.
+
+##### manual re-indent
+
+Another useful feature is the `indentAll` public method on the `CodeEditorV2` component that can be called anytime to trigger a re-indent on the content.
+
+```js
+---
+example: true
+render: false
+background: light
+---
+class IndentExample extends React.Component {
+  state = {
+    indentWithTab: true,
+    indentUnitCount: '2',
+  }
+
+  editor = null
+
+  get indentUnit() {
+    return Array(parseInt(this.state.indentUnitCount)).fill(' ').join('')
+  }
+
+  reIndent () {
+    this.editor.indentAll()
+  }
+
+  render () {
+    return (
+      <View display="block" padding="medium medium small" background="primary">
+        <View display="block" margin="small none large">
+          <FormFieldGroup description="Settings">
+            <Checkbox
+              label="indentWithTab"
+              defaultChecked={this.state.indentWithTab}
+              onChange={() => {
+                this.setState({ indentWithTab: !this.state.indentWithTab })
+              }}
+            />
+            <RadioInputGroup
+              name="indentUnitCount"
+              value={this.state.indentUnitCount}
+              description="indent space count"
+              onChange={(e, indentUnitCount) => {
+                this.setState({indentUnitCount})
+                this.reIndent()
+              }}
+            >
+              {['2', '4', '8'].map(count => <RadioInput key={count} label={count} value={count} />)}
+            </RadioInputGroup>
+            <Button onClick={() => {
+              this.reIndent()
+            }}>
+              Re-indent code
+            </Button>
+          </FormFieldGroup>
+        </View>
+
+        <CodeEditorV2
+          label='indent example'
+          ref={(component) => { this.editor = component }}
+          language="jsx"
+          indentWithTab={this.state.indentWithTab}
+          indentUnit={this.indentUnit}
+          defaultValue={`const fruit: string = "apple"
+
+function exampleMethod(props: Props) {
+  return props ? props.value : null
 }
 
-.centertext { text-align: center; }
+/**
+ * This is an example
+ * @param {Object} props
+ */
+const Example = () => {
+  return (
+    <View as="div" padding={'large'}>
+      <Position
+        renderTarget={<GoodComponent />}
+        placement='end center'
+        offsetX='20px'
+      >
+        <span style={{ padding: '8px', background: 'white' }}>
+          Positioned content
+        </span>
+      </Position>
+    </View>
+  )
+}
 
-img { opacity: 0.5; filter: alpha(opacity=50); }`}
-/>
+render(<Example />)`}
+        />
+      </View>
+    )
+  }
+}
+
+render(<IndentExample />)
 ```
 
-### markdown
+### Direction
+
+CodeEditorV2 is a bidirectional component. It will inherit the text-direction from the context, and can be set directly on the component with the `direction` prop. The `rtl` mode will flip the overall layout and selects base paragraph direction to RTL.
+
+The `rtlMoveVisually` prop controls the cursor movement in RTL mode, whether it should be **visual** (pressing the left arrow moves the cursor left) or **logical** (pressing the left arrow moves to the next lower index in the string, which is visually right in RTL text).
 
 ```js
 ---
 example: true
+render: false
+background: light
 ---
-<CodeEditorV2
-  label='markdown code editor'
-  lineNumbers
-  lineWrapping
-  highlightActiveLine
-  highlightActiveLineGutter
-  foldGutter
-  spellcheck
-  language="markdown"
-  value={`#### The quarterly results look great!
+class DirectionExample extends React.Component {
+  state = {
+    contextDir: 'unset',
+    editorDir: 'unset',
+    rtlMoveVisually: true,
+  }
 
-> - Revenue was off the chart.
-> - Profits were higher than ever.
+  render () {
+    return (
+      <InstUISettingsProvider dir={this.state.contextDir !== 'unset'
+        ? this.state.contextDir
+        : undefined
+      }>
+        <View
+          display="block"
+          padding="medium medium small"
+          background="primary"
+        >
+          <View
+            display="block"
+            margin="small none large"
+          >
+            <FormFieldGroup description="Settings" layout='columns' vAlign='top'>
+              <RadioInputGroup
+                name="contextDir"
+                value={this.state.contextDir}
+                description="context direction"
+                onChange={(e, contextDir) => {
+                  this.setState({contextDir})
+                }}
+              >
+                {['unset', 'ltr', 'rtl'].map(dir => <RadioInput key={dir} label={dir} value={dir} />)}
+              </RadioInputGroup>
+              <RadioInputGroup
+                name="editorDir"
+                value={this.state.editorDir}
+                description="editor direction"
+                onChange={(e, editorDir) => {
+                  this.setState({editorDir})
+                }}
+              >
+                {['unset', 'ltr', 'rtl'].map(dir => <RadioInput key={dir} label={dir} value={dir} />)}
+              </RadioInputGroup>
+              <Checkbox
+                label="rtlMoveVisually"
+                defaultChecked={this.state.rtlMoveVisually}
+                onChange={() => {
+                  this.setState({ rtlMoveVisually: !this.state.rtlMoveVisually })
+                }}
+              />
+            </FormFieldGroup>
+          </View>
 
-*Everything* is going according to **plan**.
+          <CodeEditorV2
+            label='editable code editor'
+            language="jsx"
+            direction={this.state.editorDir !== 'unset'
+              ? this.state.editorDir
+              : undefined
+            }
+            rtlMoveVisually={this.state.rtlMoveVisually}
+            defaultValue={`function directionExample(dir?: 'ltr' | 'rtl') {
+  console.log(dir)
+}`}
+          />
+        </View>
+      </InstUISettingsProvider>
+    )
+  }
+}
 
----
-example: true
----`}
-/>
+
+
+render(<DirectionExample />)
 ```
 
-### shell
+### Focus management
+
+By default, CodeEditorV2 is tabbable/focusable, and once it is in focus, tabbing will move the focus on the page. These behaviours can be changed with the [editable](/#CodeEditorV2/#editable-and-readonly) and [indentWithTab](/#CodeEditorV2/#indentation-indent-with-tab) props.
+
+The `autofocus` prop will automatically focus the editor on the initial render.
+
+You can also manually focus the editor with its public `focus` method (the `hasFocus` getter is also available).
 
 ```js
 ---
 example: true
+render: false
+background: light
 ---
-<CodeEditorV2
-  label='shell code editor'
-  lineNumbers
-  lineWrapping
-  highlightActiveLine
-  highlightActiveLineGutter
-  foldGutter
-  spellcheck
-  language="shell"
-  value={`#!/bin/bash
+class FocusExample extends React.Component {
+  state = {
+    indentWithTab: true,
+    indentUnitCount: '2',
+  }
 
-# example of using arguments to a script
-echo "My first name is $1"
-echo "My surname is $2"
-echo "Total number of arguments is $#"
+  editor = null
 
-________________________________________
+  render () {
+    return (
+      <View display="block" padding="medium medium small" background="primary">
+        <View display="block" margin="small none large">
+          <Button onClick={() => {
+            console.log('manual focus')
+            this.editor.focus()
+          }}>
+            Focus editor
+          </Button>
+        </View>
 
-$ chmod a+x name.sh
-$ ./name.sh Hans-Wolfgang Loidl
-My first name is Hans-Wolfgang
-My surname is Loidl
-Total number of arguments is 2`}
-/>
+        <CodeEditorV2
+          label='focus example'
+          ref={(component) => { this.editor = component }}
+          language="jsx"
+          onFocus={() => {
+            console.log('onFocus')
+            console.log({ hasFocus: this.editor.hasFocus })
+          }}
+          onBlur={() => {
+            console.log('onBlur')
+            console.log({ hasFocus: this.editor.hasFocus })
+          }}
+          defaultValue={`function exampleMethod(props: Props) {
+  return props ? props.value : null
+}`}
+        />
+      </View>
+    )
+  }
+}
+
+render(<FocusExample />)
 ```
 
-### yml
+### Attachment
+
+The `attachment` prop removes the top/bottom border-radius and margin of the editor, so it can be attached to the top or bottom of another element.
 
 ```js
 ---
 example: true
+render: false
+background: light
 ---
-<CodeEditorV2
-  label='yml code editor'
-  lineNumbers
-  lineWrapping
-  highlightActiveLine
-  highlightActiveLineGutter
-  foldGutter
-  spellcheck
-  language="yml"
-  value={`---
- doe: "a deer, a female deer"
- ray: "a drop of golden sun"
- pi: 3.14159
- xmas: true
- french-hens: 3
- calling-birds:
-   - huey
-   - dewey
-   - louie
-   - fred
- xmas-fifth-day:
-   calling-birds: four
-   french-hens: 3
-   golden-rings: 5
-   partridges:
-     count: 1
-     location: "a pear tree"
-   turtle-doves: two`}
-/>
+class AttachmentExample extends React.Component {
+  state = {
+    attachment: 'none'
+  }
+
+  render () {
+    return (
+      <View display="block" padding="medium medium small" background="primary">
+        <View display="block" margin="small none large">
+          <RadioInputGroup
+            name="attachmentExample"
+            value={this.state.attachment}
+            description="attachment"
+            onChange={(e, attachment) => {
+              this.setState({attachment})
+            }}
+          >
+            {['none', 'top', 'bottom'].map(attachment => <RadioInput key={attachment} label={attachment} value={attachment} />)}
+          </RadioInputGroup>
+        </View>
+
+        {this.state.attachment === 'bottom' && (
+          <View as="div" borderWidth='small' padding="small">
+            CodeEditor is attached to the bottom of this element
+          </View>
+        )}
+        <CodeEditorV2
+          label='attachment example'
+          language="jsx"
+          attachment={this.state.attachment === 'none' ? undefined : this.state.attachment}
+          defaultValue={`const fruit: string = "apple"
+
+function exampleMethod(props: Props) {
+  return props ? props.value : null
+}`}
+        />
+        {this.state.attachment === 'top' && (
+          <View as="div" borderWidth='small' padding="small">
+            CodeEditor is attached to the top of this element
+          </View>
+        )}
+      </View>
+    )
+  }
+}
+
+
+
+render(<AttachmentExample />)
 ```
 
 ### Playground
@@ -282,14 +727,14 @@ const longText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maece
     readOnly: false,
     attachment: 'none',
     lineNumbers: false,
-    highlightActiveLine: true,
+    foldGutter: false,
     highlightActiveLineGutter: false,
+    highlightActiveLine: true,
     lineWrapping: true,
     spellcheck: false,
     direction: 'ltr',
-    rtlMoveVisually: false,
+    rtlMoveVisually: true,
     indentOnLoad: false,
-    indentOnInput: true,
     indentWithTab: false,
   }
 
@@ -300,14 +745,13 @@ const longText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maece
       'editable',
       'readOnly',
       'lineNumbers',
-      'highlightActiveLine',
-      'highlightActiveLineGutter',
       'foldGutter',
+      'highlightActiveLineGutter',
+      'highlightActiveLine',
       'lineWrapping',
       'spellcheck',
       'rtlMoveVisually',
       'indentOnLoad',
-      'indentOnInput',
       'indentWithTab',
     ]
     const booleanPropsState = {}
@@ -413,18 +857,15 @@ const longText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maece
 
         <CodeEditorV2
           label='code editor'
-          value={this.state.value}
           language={this.state.lang}
           {...booleanPropsState}
+          direction={this.state.direction}
           attachment={
             this.state.attachment === 'none' ? undefined : this.state.attachment
           }
-          direction={this.state.direction}
+          value={this.state.value}
           onChange={(value) => {
-            // No need to set value from `onChange`,
-            // but it can be used as an event listener
-            // or for transforming the value.
-            // this.setState({ value: value.toUpperCase() })
+            this.setState({ value })
           }}
         />
       </div>

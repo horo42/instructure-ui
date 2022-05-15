@@ -35,6 +35,7 @@ export {
   BaseButton,
   Button,
   CloseButton,
+  ColorButton,
   CondensedButton,
   IconButton,
   ToggleButton

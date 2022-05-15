@@ -21,12 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-export { ColorPicker } from './ColorPicker'
-export { ColorMixer } from './ColorMixer'
-export { ColorPreset } from './ColorPreset'
-export { ColorContrast } from './ColorContrast'
 
-export type { ColorPickerProps } from './ColorPicker/props'
-export type { ColorMixerProps } from './ColorMixer/props'
-export type { ColorPresetProps } from './ColorPreset/props'
-export type { ColorContrastProps } from './ColorContrast/props'
+import { ColorButtonLocator } from './ColorButtonLocator'
+
+export { ColorButtonLocator }
+export default ColorButtonLocator

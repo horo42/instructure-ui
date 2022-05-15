@@ -28,10 +28,12 @@ import { Component } from 'react'
 import { withStyle, jsx } from '@instructure/emotion'
 import { Menu } from '@instructure/ui-menu'
 import { IconButton, Button } from '@instructure/ui-buttons'
+import { View } from '@instructure/ui-view'
 import { Tooltip } from '@instructure/ui-tooltip'
 import { Popover } from '@instructure/ui-popover'
 import { Text } from '@instructure/ui-text'
 import { IconAddLine, IconCheckDarkSolid } from '@instructure/ui-icons'
+import { ScreenReaderContent } from '@instructure/ui-a11y-content'
 import {
   colorTohex8,
   hexToRgb
@@ -68,12 +70,15 @@ class ColorPreset extends Component<ColorPresetProps, ColorPresetState> {
   }
 
   calcBlendedColor = (c1: RGBAType, c2: RGBAType) => {
-    const alpha = 1 - (1 - c2.a) * (1 - c1.a)
+    // as decided by design
+    const c2Alpha = c2.a * 0.4
+    const c1Alpha = 1 - c2Alpha
+    const alpha = 1 - c1Alpha * (1 - c1Alpha)
 
     return `rgb(
-      ${(c2.r * c2.a) / alpha + (c1.r * c1.a * (1 - c2.a)) / alpha},
-      ${(c2.g * c2.a) / alpha + (c1.g * c1.a * (1 - c2.a)) / alpha},
-      ${(c2.b * c2.a) / alpha + (c1.b * c1.a * (1 - c2.a)) / alpha})`
+      ${(c2.r * c2Alpha) / alpha + (c1.r * c1Alpha * (1 - c2Alpha)) / alpha},
+      ${(c2.g * c2Alpha) / alpha + (c1.g * c1Alpha * (1 - c2Alpha)) / alpha},
+      ${(c2.b * c2Alpha) / alpha + (c1.b * c1Alpha * (1 - c2Alpha)) / alpha})`
   }
 
   hextoRGB = (hex: string) => {
@@ -196,29 +201,49 @@ class ColorPreset extends Component<ColorPresetProps, ColorPresetState> {
     </Popover>
   )
   renderColorIndicator = (color: string, selectOnClick?: boolean) => (
-    <Tooltip renderTip={color}>
-      <button
-        css={this.props?.styles?.presetRect}
-        style={{
-          borderColor: this.calcBlendedColor(
-            { r: 56, g: 74, b: 88, a: 0.6 },
-            { ...hexToRgb(color), a: 0.4 }
-          ),
-          boxShadow: `inset 0 0 0 50px ${color}`
-        }}
+    <Tooltip
+      renderTip={
+        <div>
+          <ScreenReaderContent>Hex color code:</ScreenReaderContent>
+          {color}
+        </div>
+      }
+    >
+      <View
+        position="relative"
+        width="38px"
+        height="38px"
+        background="transparent"
+        margin="xx-small"
+        display="inline-block"
+        borderRadius="medium"
+        borderWidth="0"
+        padding="0"
+        as="button"
         {...(selectOnClick
           ? { onClick: () => this.props.onSelect(color) }
           : {})}
       >
-        {this.props.selected === color && (
-          <div css={this.props?.styles?.selectedIndicator}>
-            <IconCheckDarkSolid
-              themeOverride={{ sizeXSmall: '0.8rem' }}
-              size="x-small"
-            />
-          </div>
-        )}
-      </button>
+        <div
+          css={this.props?.styles?.presetRect}
+          style={{
+            borderColor: this.calcBlendedColor(
+              { r: 56, g: 74, b: 88, a: 0.6 },
+              { ...hexToRgb(color) }
+            ),
+            boxShadow: `inset 0 0 0 50px ${color}`
+          }}
+        >
+          {this.props.selected === color && (
+            <div css={this.props?.styles?.selectedIndicator}>
+              <IconCheckDarkSolid
+                themeOverride={{ sizeXSmall: '0.8rem' }}
+                size="x-small"
+              />
+            </div>
+          )}
+        </div>
+      </View>
     </Tooltip>
   )
   renderSettingsMenu = (color: string, index: number) => (

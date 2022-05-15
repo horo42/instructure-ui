@@ -25,29 +25,31 @@
 /** @jsx jsx */
 import { Component } from 'react'
 import { withStyle, jsx } from '@instructure/emotion'
-import shallowCompare from '../utils/shallowCompare'
+import { View } from '@instructure/ui-view'
+import { ViewOwnProps } from '@instructure/ui-view/src/View/props'
 import { SliderProps } from './props'
 
 import generateStyle from './styles'
+import generateComponentTheme from './theme'
 
-@withStyle(generateStyle)
+@withStyle(generateStyle, generateComponentTheme)
 class Slider extends Component<SliderProps> {
-  sliderRef: HTMLCanvasElement | null = null
+  sliderRef: HTMLDivElement | null = null
 
+  static defaultProps = {
+    isColorSlider: false
+  }
   componentDidMount() {
-    this.props.makeStyles?.()
-    this.props.drawSlider(this.sliderRef!, this.props.width, this.props.height)
+    this.props.makeStyles?.({
+      calcSliderPositionFromValue: this.calcSliderPositionFromValue
+    })
+    // this.props.drawSlider(this.sliderRef!, this.props.width, this.props.height)
   }
 
-  componentDidUpdate(prevProps: SliderProps) {
-    this.props.makeStyles?.()
-    if (prevProps.color && this.props.color) {
-      this.props.drawSlider(
-        this.sliderRef!,
-        this.props.width,
-        this.props.height
-      )
-    }
+  componentDidUpdate() {
+    this.props.makeStyles?.({
+      calcSliderPositionFromValue: this.calcSliderPositionFromValue
+    })
   }
 
   componentWillUnmount() {
@@ -60,21 +62,21 @@ class Slider extends Component<SliderProps> {
     window.removeEventListener('mouseup', this.handleMouseUp)
   }
 
-  handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  handleMouseDown(e: React.MouseEvent<ViewOwnProps, MouseEvent>) {
     this.handleChange(e)
     //@ts-expect-error TODO
     window.addEventListener('mousemove', this.handleChange)
     window.addEventListener('mouseup', this.handleMouseUp)
   }
 
-  handleChange = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  handleChange = (e: React.MouseEvent<ViewOwnProps, MouseEvent>) => {
     const { clientX } = e
-    const newPosition = this.props.calcSliderPositionFromCursorPosition(
+    const newPosition = this.calcSliderPositionFromCursorPosition(
       clientX,
       this.sliderRef!
     )
 
-    this.props.onChange(newPosition)
+    this.props.onChange(this.calcValueFromSliderPosition(newPosition))
     this.setState({
       position: newPosition
     })
@@ -88,48 +90,108 @@ class Slider extends Component<SliderProps> {
     if (x < 0) return 0
     return x
   }
-  handleKeyDown(e: React.KeyboardEvent<HTMLCanvasElement>) {
+  calcSliderPositionFromCursorPosition = (
+    clientX: number,
+    sliderRef: HTMLDivElement
+  ) => {
+    if (this.props.isColorSlider) {
+      const { x } = sliderRef.getBoundingClientRect()
+      const newPosition = clientX - x
+      return newPosition < 0
+        ? 0
+        : newPosition > this.props.width
+        ? this.props.width - 1
+        : newPosition
+    } else {
+      const { x } = sliderRef.getBoundingClientRect()
+      return clientX - x
+    }
+  }
+  calcSliderPositionFromValue = (value: number) => {
+    if (this.props.isColorSlider) {
+      return (value / 360) * this.props.width
+    } else {
+      return this.props.width - (1 - value) * this.props.width
+    }
+  }
+
+  calcValueFromSliderPosition = (position: number) => {
+    if (this.props.isColorSlider) {
+      return (position / this.props.width) * 360
+    } else {
+      const positionWithBoundaries =
+        position < 0
+          ? 0
+          : position > this.props.width
+          ? this.props.width
+          : position
+      return Math.round((positionWithBoundaries * 100) / this.props.width)
+    }
+  }
+
+  handleKeyDown(e: React.KeyboardEvent<ViewOwnProps>) {
     const { key } = e
+    if (key === 'Tab') return
     e.preventDefault()
     let deltaX = 0
-    if (key === 'ArrowLeft') {
+    if (key === 'ArrowLeft' || key === 'a') {
       deltaX = -2
     }
-    if (key === 'ArrowRight') {
+    if (key === 'ArrowRight' || key === 'd') {
       deltaX = 2
     }
 
     const newPosition = this.applyBoundaries(
-      this.props.calcSliderPositionFromValue(this.props.value) + deltaX
+      this.calcSliderPositionFromValue(this.props.value) + deltaX
     )
-    this.props.onChange(newPosition)
+    this.props.onChange(this.calcValueFromSliderPosition(newPosition))
   }
 
   render() {
     return (
-      <div
-        css={this.props.styles?.colorSlider}
-        role="button"
-        tabIndex={0}
+      <View
+        position="relative"
+        width={this.props.width}
+        height={this.props.height}
+        background="transparent"
+        margin="xx-small"
+        display="flex"
+        borderRadius="medium"
+        borderWidth="0"
+        padding="0"
+        as="button"
+        onKeyDown={(e) => this.handleKeyDown(e)}
         onMouseDown={(e) => this.handleMouseDown(e)}
+        tabIndex={0}
       >
+        <div css={this.props.styles?.indicator} />
         <div
-          role="button"
-          tabIndex={0}
-          onMouseDown={(e) => this.handleMouseDown(e)}
-          css={this.props.styles?.indicator}
-        ></div>
-        <canvas
-          tabIndex={0}
-          onKeyDown={(e) => this.handleKeyDown(e)}
           ref={(ref) => {
             this.sliderRef = ref
           }}
-          width={this.props.width}
           css={this.props.styles?.canvas}
-          height={this.props.height}
-        />
-      </div>
+        >
+          <div
+            style={{
+              width: this.props.width,
+              height: this.props.height,
+              background: this.props.isColorSlider
+                ? 'transparent'
+                : `linear-gradient(to right, rgba(255,0,0,0), ${this.props.color?.slice(
+                    0,
+                    -2
+                  )})`,
+              borderRadius: this.props.height,
+
+              boxSizing: 'border-box',
+
+              borderStyle: 'solid',
+              borderColor: 'rgba(56, 74, 88, 0.6)',
+              borderWidth: '1px'
+            }}
+          />
+        </div>
+      </View>
     )
   }
 }

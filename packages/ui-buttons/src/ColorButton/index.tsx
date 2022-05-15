@@ -22,50 +22,52 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
+/** @jsx jsx */
+import { Component } from 'react'
 
-import type {
-  OtherHTMLAttributes,
-  PropValidators
-} from '@instructure/shared-types'
-import type { RGBAType, RGBType } from '../props'
+import { testable } from '@instructure/ui-testable'
+import { IconButton } from '../IconButton'
 
-type ColorSliderOwnProps = {
-  value: number
-  onChange: (hue: number) => void
-  width: number
-  height: number
-  indicatorRadius: number
+import { withStyle, jsx } from '@instructure/emotion'
+
+import generateStyle from './styles'
+
+import type { ColorButtonProps } from './props'
+
+/**
+---
+category: components
+---
+@tsProps
+**/
+@withStyle(generateStyle)
+@testable()
+class ColorButton extends Component<ColorButtonProps> {
+  static readonly componentId = 'ColorButton'
+  static defaultProps = {
+    onClick: null,
+    disabled: false
+  }
+  componentDidMount() {
+    this.props.makeStyles?.()
+  }
+
+  componentDidUpdate() {
+    this.props.makeStyles?.()
+  }
+
+  render() {
+    return (
+      <IconButton
+        screenReaderLabel="Choose color"
+        disabled={this.props.disabled}
+        onClick={this.props.onClick}
+      >
+        <div css={this.props.styles?.colorCircle} />
+      </IconButton>
+    )
+  }
 }
 
-type ColorSliderState = {
-  baseColor: number
-  internalColor: RGBType
-  value: number
-}
-
-type PropKeys = keyof ColorSliderOwnProps
-
-type AllowedPropKeys = Readonly<Array<PropKeys>>
-
-type ColorSliderProps = ColorSliderOwnProps &
-  OtherHTMLAttributes<ColorSliderOwnProps>
-
-const propTypes: PropValidators<PropKeys> = {
-  value: PropTypes.object,
-  onChange: PropTypes.func,
-  width: PropTypes.number,
-  height: PropTypes.number,
-  indicatorRadius: PropTypes.number
-}
-
-const allowedProps: AllowedPropKeys = [
-  'onChange',
-  'value',
-  'width',
-  'height',
-  'indicatorRadius'
-]
-
-export type { ColorSliderProps, ColorSliderState }
-export { propTypes, allowedProps }
+export default ColorButton
+export { ColorButton }

@@ -21,12 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-export { ColorPicker } from './ColorPicker'
-export { ColorMixer } from './ColorMixer'
-export { ColorPreset } from './ColorPreset'
-export { ColorContrast } from './ColorContrast'
 
-export type { ColorPickerProps } from './ColorPicker/props'
-export type { ColorMixerProps } from './ColorMixer/props'
-export type { ColorPresetProps } from './ColorPreset/props'
-export type { ColorContrastProps } from './ColorContrast/props'
+import React from 'react'
+import { mount, expect, stub } from '@instructure/ui-test-utils'
+
+import { ColorButton } from '../index'
+import { ColorButtonLocator } from '../ColorButtonLocator'
+
+describe('<ColorButton />', async () => {
+  beforeEach(() => {
+    stub(console, 'warn')
+  })
+
+  it('should render with x icon', async () => {
+    await mount(<ColorButton screenReaderLabel="Close" />)
+    const button = await ColorButtonLocator.find()
+    const icon = await button.find('svg[name]')
+    expect(icon.getAttribute('name')).to.equal('IconX')
+  })
+
+  it('should pass the `onClick` prop', async () => {
+    const onClick = stub()
+
+    await mount(<ColorButton onClick={onClick} screenReaderLabel="Hello" />)
+    const closeButtonRoot = await ColorButtonLocator.find()
+    const button = await closeButtonRoot.find(':focusable')
+
+    await button.click()
+
+    expect(onClick).to.have.been.calledOnce()
+  })
+})

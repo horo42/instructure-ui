@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+import { isValid } from '@instructure/ui-color-utils/src/isValid'
+
+import type { ColorButtonProps, ColorButtonStyle } from './props'
+
 /**
  * ---
  * private: true
@@ -32,43 +36,35 @@
  * @param  {Object} state the state of the component, the style is applied to
  * @return {Object} The final style object, which will be used in the component
  */
-const generateStyle = () => {
+const generateStyle = (
+  _componentTheme: undefined,
+  props: ColorButtonProps
+): ColorButtonStyle => {
+  const { color } = props
+
+  const checkerBoard = {
+    backgroundColor: '#ffffff',
+    backgroundImage: `
+    linear-gradient(45deg, #C7CDD1 25%, transparent 25%), 
+    linear-gradient(-45deg, #C7CDD1 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #C7CDD1 75%), 
+    linear-gradient(-45deg, transparent 75%, #C7CDD1 75%)`,
+    backgroundSize: '8px 8px',
+    backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px'
+  }
   return {
-    colorPreset: {
-      label: 'colorPreset',
-      display: 'flex',
-      flexWrap: 'wrap',
-      width: '250px'
+    colorButton: {
+      label: 'colorButton'
     },
-    addNewPresetButton: {
-      width: '38px',
-      height: '38px',
-      margin: '6px'
-    },
-    presetRect: {
-      width: '100%',
-      height: '100%',
-      borderRadius: '4px',
-      boxSizing: 'border-box',
-      borderStyle: 'solid',
-      backgroundImage: `linear-gradient(45deg, #C7CDD1 25%, transparent 25%),
-      linear-gradient(-45deg, #C7CDD1 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #C7CDD1 75%),
-      linear-gradient(-45deg, transparent 75%, #C7CDD1 75%)`,
-      backgroundSize: '8px 8px',
-      backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px'
-    },
-    selectedIndicator: {
-      width: '20px',
-      height: '20px',
-      borderStyle: 'solid',
-      borderColor: '#2D3B45',
-      borderRadius: '20px',
-      boxSizing: 'border-box',
-      position: 'relative',
-      left: '22px',
-      bottom: '7px',
-      backgroundColor: 'white'
+    colorCircle: {
+      backgroundColor: `${color}`,
+      width: '1.5rem',
+      height: '1.5rem',
+      margin: 'auto',
+      border: '1px solid rgba(56, 74, 88, .6)',
+      borderRadius: '1.5rem',
+      display: 'inline-block',
+      ...(!isValid(color) ? checkerBoard : {})
     }
   }
 }

@@ -35,6 +35,8 @@
     "@instructure/ui-text": "8.23.0",
     "@instructure/ui-text-input": "8.23.0",
     "@instructure/ui-tooltip": "8.23.0",
+    "@instructure/ui-view": "8.23.0",
+    "@instructure/ui-a11y-content": "8.23.0",
     "prop-types": "^15"
   },
   "devDependencies": {

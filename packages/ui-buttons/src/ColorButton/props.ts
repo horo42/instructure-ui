@@ -23,58 +23,47 @@
  */
 
 import PropTypes from 'prop-types'
-import type { WithStyleProps, ComponentStyle } from '@instructure/emotion'
 
+import type { WithStyleProps, ComponentStyle } from '@instructure/emotion'
 import type {
+  ToProp,
   OtherHTMLAttributes,
   PropValidators
 } from '@instructure/shared-types'
-import type { HSVType } from '../props'
 
-type ColorPaletteOwnProps = {
-  hue: number
-  color: HSVType
-  internalColor: HSVType
-  width: number
-  height: number
-  indicatorRadius: number
-  onChange: (rgb: HSVType) => void
+type ColorButtonOwnProps = {
+  /**
+   * Hex string. Either 3, 6 or 8 character long
+   */
+  color: string
+  /**
+   * OnClick gets called every time a user clicks the button and it's not disabled
+   */
+  onClick: () => void
+  /**
+   * If true, the button will be disabled
+   */
+  disabled: boolean
 }
 
-type ColorPaletteState = {
-  colorPosition: { x: number; y: number }
-}
-
-type PropKeys = keyof ColorPaletteOwnProps
+type PropKeys = keyof ColorButtonOwnProps
 
 type AllowedPropKeys = Readonly<Array<PropKeys>>
 
-type ColorPaletteProps = ColorPaletteOwnProps &
-  WithStyleProps<null, ColorPaletteStyle> &
-  OtherHTMLAttributes<ColorPaletteOwnProps>
+type ColorButtonProps = ColorButtonOwnProps &
+  WithStyleProps<null, ColorButtonStyle> &
+  OtherHTMLAttributes<ColorButtonOwnProps> &
+  ToProp
 
-type ColorPaletteStyle = ComponentStyle<
-  'ColorPalette' | 'indicator' | 'palette'
->
+type ColorButtonStyle = ComponentStyle<'colorButton' | 'colorCircle'>
+
 const propTypes: PropValidators<PropKeys> = {
-  hue: PropTypes.number,
-  color: PropTypes.object,
-  internalColor: PropTypes.object,
-  width: PropTypes.number,
-  height: PropTypes.number,
-  indicatorRadius: PropTypes.number,
-  onChange: PropTypes.func
+  color: PropTypes.string.isRequired,
+  onClick: PropTypes.func,
+  disabled: PropTypes.bool
 }
 
-const allowedProps: AllowedPropKeys = [
-  'hue',
-  'color',
-  'internalColor',
-  'width',
-  'height',
-  'indicatorRadius',
-  'onChange'
-]
+const allowedProps: AllowedPropKeys = ['color']
 
-export type { ColorPaletteProps, ColorPaletteState, ColorPaletteStyle }
+export type { ColorButtonProps, ColorButtonStyle }
 export { propTypes, allowedProps }

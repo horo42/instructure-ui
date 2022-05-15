@@ -27,7 +27,7 @@ import { Component } from 'react'
 
 import { TextInput } from '@instructure/ui-text-input'
 import { Tooltip } from '@instructure/ui-tooltip'
-import { IconButton, Button } from '@instructure/ui-buttons'
+import { Button, ColorButton } from '@instructure/ui-buttons'
 import {
   colorTohex8,
   hexToRgb
@@ -128,11 +128,10 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
   componentDidUpdate(prevProps: ColorPickerProps) {
     this.props.makeStyles?.(this.state)
 
-    if (this.props.value && prevProps.value !== this.props.value) {
-      const hexCode = this.props.value
+    if (prevProps.value !== this.props.value) {
       this.setState({
         showHelperErrorMessages: false,
-        hexCode
+        hexCode: this.props.value!
       })
     }
   }
@@ -252,6 +251,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
 
   handleOnChange(event: React.ChangeEvent<HTMLInputElement>, value: string) {
     const { onChange } = this.props
+
     if (
       value.length > (this.props.withAlpha ? 8 : 6) ||
       //TODO remove any
@@ -317,11 +317,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
 
   renderAddNewPresetButton = () => (
     <Popover
-      renderTrigger={
-        <IconButton screenReaderLabel="Choose color">
-          {this.renderCircle()}
-        </IconButton>
-      }
+      renderTrigger={<ColorButton color={`#${this.state.hexCode}`} />}
       isShowingContent={this.state.openColorPicker}
       onShowContent={() => {
         this.setState({ openColorPicker: true })
@@ -347,7 +343,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
         />
         <div
           style={{
-            borderStyle: 'solid',
+            borderTop: 'solid',
             borderWidth: '1px',
             borderColor: '#C7CDD1' /*Tiara */,
             margin: '20px 0 20px 0'
@@ -371,7 +367,8 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
           backgroundColor: '#F5F5F5' /*Porcelain */,
           display: 'flex',
           flexDirection: 'row-reverse',
-          padding: '14px'
+          padding: '7px',
+          borderTop: 'solid 1px #C7CDD1' //Tiara
         }}
       >
         <Button

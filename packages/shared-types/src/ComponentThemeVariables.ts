@@ -411,6 +411,14 @@ export type ColorContrastTheme = {
   failureColor: Colors['crimson']
 }
 
+export type SliderTheme = {
+  indicatorBorderColor: Colors['licorice']
+}
+
+export type PaletteTheme = {
+  indicatorBorderColor: Colors['licorice']
+}
+
 export type DrawerLayoutContentTheme = {
   duration: Transitions['duration']
 }

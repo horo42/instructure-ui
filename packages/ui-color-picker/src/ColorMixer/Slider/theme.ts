@@ -21,12 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-export { ColorPicker } from './ColorPicker'
-export { ColorMixer } from './ColorMixer'
-export { ColorPreset } from './ColorPreset'
-export { ColorContrast } from './ColorContrast'
 
-export type { ColorPickerProps } from './ColorPicker/props'
-export type { ColorMixerProps } from './ColorMixer/props'
-export type { ColorPresetProps } from './ColorPreset/props'
-export type { ColorContrastProps } from './ColorContrast/props'
+import type { Theme } from '@instructure/ui-themes'
+import { SliderTheme } from '@instructure/shared-types'
+
+/**
+ * Generates the theme object for the component from the theme and provided additional information
+ * @param  {Object} theme The actual theme object.
+ * @return {Object} The final theme object with the overrides and component variables
+ */
+const generateComponentTheme = (theme: Theme): SliderTheme => {
+  const { colors } = theme
+
+  const componentVariables = {
+    indicatorBorderColor: colors.licorice
+  }
+
+  return {
+    ...componentVariables
+  }
+}
+
+export default generateComponentTheme

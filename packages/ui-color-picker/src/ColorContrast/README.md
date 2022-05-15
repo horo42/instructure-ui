@@ -74,7 +74,7 @@ class Example extends React.Component {
       />
       <ColorPreset
         label="Foreground"
-        colors={ ['#ffffff', '#0CBF94', '#0C89BF00', '#BF0C6D', '#BF8D0C', '#ff0000', '#576A66', '#35423A', '#35423F']}
+        colors={ ['#ffffff', '#0CBF94', '#0C89BF00', '#BF0C6D88', '#BF8D0C', '#ff0000', '#576A66', '#35423A', '#35423F']}
         selected={this.state.selectedForeGround}
         onSelect={(selectedForeGround) => this.setState({ selectedForeGround })}
       />

@@ -32,6 +32,11 @@ import { ColorContrastProps } from './props'
 import generateStyle from './styles'
 import generateComponentTheme from './theme'
 import { getContrast2Dec as getContrast } from '@instructure/ui-color-utils/src/contrast'
+import {
+  hexToRgb,
+  colorTohex8
+} from '@instructure/ui-color-utils/src/conversions'
+import type { RGBAType } from '../ColorMixer/props'
 
 /**
 ---
@@ -98,9 +103,36 @@ class ColorContrast extends Component<ColorContrastProps> {
       </div>
     </Fragment>
   )
+  calcBlendedColor = (c1: RGBAType, c2: RGBAType) => {
+    // as decided by design
+    const alpha = 1 - (1 - c1.a) * (1 - c2.a)
+    return {
+      r: (c2.r * c2.a) / alpha + (c1.r * c1.a * (1 - c2.a)) / alpha,
+      g: (c2.g * c2.a) / alpha + (c1.g * c1.a * (1 - c2.a)) / alpha,
+      b: (c2.b * c2.a) / alpha + (c1.b * c1.a * (1 - c2.a)) / alpha,
+      a: 1
+    }
+  }
+  /**
+   * We project the first (c1) color into a solid white background and then we project the second (c2) color to
+   * the projected forst color. We compare this two, projected colors after
+   */
+  calcContrast = (c1: string, c2: string) => {
+    const c1RGBA = hexToRgb(c1)
+    const c2RGBA = hexToRgb(c2)
+    const c1OnWhite = this.calcBlendedColor(
+      { r: 255, g: 255, b: 255, a: 1 },
+      c1RGBA
+    )
+    const c2OnC1OnWhite = this.calcBlendedColor(c1OnWhite, c2RGBA)
 
+    return getContrast(colorTohex8(c1OnWhite), colorTohex8(c2OnC1OnWhite))
+  }
   render() {
-    const contrast = getContrast(this.props.firstColor, this.props.secondColor)
+    const contrast = this.calcContrast(
+      this.props.firstColor,
+      this.props.secondColor
+    )
     return (
       <div css={this.props.styles?.colorContrast}>
         <Text weight="bold" as="div">

@@ -22,52 +22,24 @@
  * SOFTWARE.
  */
 
-import PropTypes from 'prop-types'
+import type { Theme } from '@instructure/ui-themes'
+import { PaletteTheme } from '@instructure/shared-types'
 
-import type {
-  OtherHTMLAttributes,
-  PropValidators
-} from '@instructure/shared-types'
-import type { RGBAType, RGBType } from '../props'
+/**
+ * Generates the theme object for the component from the theme and provided additional information
+ * @param  {Object} theme The actual theme object.
+ * @return {Object} The final theme object with the overrides and component variables
+ */
+const generateComponentTheme = (theme: Theme): PaletteTheme => {
+  const { colors } = theme
 
-type OpacitySliderOwnProps = {
-  value: number
-  onChange: (opacity: number) => void
-  width: number
-  height: number
-  indicatorRadius: number
-  color: RGBAType
+  const componentVariables = {
+    indicatorBorderColor: colors.licorice
+  }
+
+  return {
+    ...componentVariables
+  }
 }
 
-type OpacitySliderState = {
-  baseColor: RGBType
-  internalColor: RGBType
-  value: RGBAType
-}
-
-type PropKeys = keyof OpacitySliderOwnProps
-
-type AllowedPropKeys = Readonly<Array<PropKeys>>
-
-type OpacitySliderProps = OpacitySliderOwnProps &
-  OtherHTMLAttributes<OpacitySliderOwnProps>
-
-const propTypes: PropValidators<PropKeys> = {
-  value: PropTypes.object,
-  onChange: PropTypes.func,
-  width: PropTypes.number,
-  height: PropTypes.number,
-  indicatorRadius: PropTypes.number,
-  color: PropTypes.object
-}
-
-const allowedProps: AllowedPropKeys = [
-  'onChange',
-  'value',
-  'width',
-  'height',
-  'indicatorRadius'
-]
-
-export type { OpacitySliderProps, OpacitySliderState }
-export { propTypes, allowedProps }
+export default generateComponentTheme

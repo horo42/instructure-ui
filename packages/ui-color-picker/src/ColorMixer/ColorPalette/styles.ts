@@ -27,6 +27,7 @@ import type {
   ColorPaletteProps,
   ColorPaletteState
 } from './props'
+import type { PaletteTheme } from '@instructure/shared-types'
 
 /**
  * ---
@@ -39,16 +40,13 @@ import type {
  * @return {Object} The final style object, which will be used in the component
  */
 const generateStyle = (
-  _componentTheme: any,
+  componentTheme: PaletteTheme,
   props: ColorPaletteProps,
   state: ColorPaletteState
 ): ColorPaletteStyle => {
   return {
     ColorPalette: {
-      label: 'ColorPalette',
-      width: props.width,
-      height: props.height,
-      position: 'relative'
+      label: 'ColorPalette'
     },
     indicator: {
       width: `${2 * props.indicatorRadius}px`,
@@ -57,13 +55,21 @@ const generateStyle = (
       background: 'white',
       position: 'absolute',
       borderStyle: 'solid',
-      borderWidth: '2px',
-      borderColor: 'black',
+      borderWidth: '1px',
+      borderColor: componentTheme.indicatorBorderColor,
       top: state?.colorPosition?.y - props.indicatorRadius,
       left: state?.colorPosition?.x - props.indicatorRadius
     },
-    canvas: {
-      borderRadius: '5px'
+    palette: {
+      width: props.width,
+      height: props.height,
+      borderRadius: '5px',
+      borderStyle: 'solid',
+      borderWidth: '1px',
+      boxSizing: 'border-box',
+      borderColor: 'rgba(22,29,35,.6)',
+      background: `linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1)),
+      linear-gradient(to right, white, hsl(${props.hue},100%,50%))`
     }
   }
 }

@@ -63,8 +63,10 @@ class RGBAInput extends Component<RGBAInputProps, RGBAInputState> {
 
   handleChange(type: string, e: React.ChangeEvent<HTMLInputElement>) {
     const upperLimit = type === 'a' ? 100 : 255
-    const newValue = Number(e.target.value)
-    const newColor = { ...this.props.value, [type]: Number(e.target.value) }
+    const newValue =
+      type === 'a' ? Number(e.target.value) / 100 : Number(e.target.value)
+    const newColor = { ...this.props.value, [type]: newValue }
+
     if (!isNaN(Number(newValue)) && newValue >= 0 && newValue <= upperLimit) {
       this.setState({ value: newColor })
       this.props.onChange(newColor)

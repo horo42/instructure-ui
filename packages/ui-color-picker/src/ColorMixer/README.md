@@ -21,11 +21,11 @@ class Example extends React.Component {
   }
 
   render() {
-
     return (
       <div>
         <div style={{display:'flex'}}>
           <ColorMixer
+          withAlpha
           value={this.state.value}
           onChange={(value) => this.setState({ value })} />
           <div style={{
@@ -40,7 +40,7 @@ class Example extends React.Component {
             }}>{this.state.value}</div>
         </div>
         <div style={{marginTop:'10px'}}>
-        <Button onClick={()=>this.setState({value:"#99BBCC"})}>Jump to #99BBCC</Button>
+        <Button onClick={()=>this.setState({value:"#579b17"})}>Jump to #579b17</Button>
         </div>
       </div>
     );

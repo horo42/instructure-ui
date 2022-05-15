@@ -23,6 +23,7 @@
  */
 
 import type { SliderStyle, SliderProps } from './props'
+import type { SliderTheme } from '@instructure/shared-types'
 
 /**
  * ---
@@ -35,9 +36,24 @@ import type { SliderStyle, SliderProps } from './props'
  * @return {Object} The final style object, which will be used in the component
  */
 const generateStyle = (
-  _componentTheme: null,
-  props: SliderProps
+  componentTheme: SliderTheme,
+  props: SliderProps,
+  state: any
 ): SliderStyle => {
+  const sliderBackground = props.isColorSlider
+    ? {
+        background:
+          'linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)'
+      }
+    : {
+        background: `linear-gradient(45deg, #C7CDD1 25%, transparent 25%),
+      linear-gradient(-45deg, #C7CDD1 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #C7CDD1 75%),
+      linear-gradient(-45deg, transparent 75%, #C7CDD1 75%)`,
+        backgroundSize: '6px 6px',
+        backgroundPosition: '0 0, 0 3px, 3px -3px, -3px 0px'
+      }
+
   return {
     colorSlider: {
       label: 'colorMixerSlider',
@@ -53,13 +69,21 @@ const generateStyle = (
       background: 'white',
       position: 'absolute',
       borderStyle: 'solid',
-      borderWidth: '2px',
-      borderColor: 'black',
-      top: props.height - props.indicatorRadius + 4,
+      borderWidth: '1px',
+      borderColor: componentTheme.indicatorBorderColor,
+      top: -3,
       left:
-        props.calcSliderPositionFromValue(props.value) - props.indicatorRadius
+        state?.calcSliderPositionFromValue?.(props.value) -
+        props.indicatorRadius,
+      zIndex: 1
     },
-    canvas: { borderRadius: props.height }
+    canvas: {
+      borderRadius: props.height,
+      width: props.width,
+      height: props.height,
+      boxSizing: 'border-box',
+      ...sliderBackground
+    }
   }
 }
 

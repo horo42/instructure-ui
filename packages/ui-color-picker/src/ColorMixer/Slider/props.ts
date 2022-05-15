@@ -32,19 +32,10 @@ import type {
 import type { RGBType, RGBAType } from '../props'
 
 type SliderOwnProps = {
-  drawSlider: (
-    sliderRef: HTMLCanvasElement,
-    width: number,
-    height: number
-  ) => void
+  isColorSlider: boolean
   onChange: (position: number) => void
   width: number
-  calcSliderPositionFromValue: (value: SliderOwnProps['value']) => number
-  calcSliderPositionFromCursorPosition: (
-    clientX: number,
-    ref: HTMLCanvasElement
-  ) => number
-  value: RGBType | number
+  value: number
   indicatorRadius: number
   height: number
 }
@@ -66,22 +57,18 @@ type SliderProps = SliderOwnProps &
 type SliderStyle = ComponentStyle<'colorSlider' | 'indicator' | 'canvas'>
 
 const propTypes: PropValidators<PropKeys> = {
-  drawSlider: PropTypes.func,
+  isColorSlider: PropTypes.bool,
   onChange: PropTypes.func,
   width: PropTypes.number,
-  calcSliderPositionFromValue: PropTypes.func,
-  calcSliderPositionFromCursorPosition: PropTypes.func,
   value: PropTypes.object,
   indicatorRadius: PropTypes.number,
   height: PropTypes.number
 }
 
 const allowedProps: AllowedPropKeys = [
-  'drawSlider',
+  'isColorSlider',
   'onChange',
   'width',
-  'calcSliderPositionFromValue',
-  'calcSliderPositionFromCursorPosition',
   'value',
   'indicatorRadius',
   'height'

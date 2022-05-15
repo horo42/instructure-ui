@@ -25,6 +25,7 @@
 /** @jsx jsx */
 import React, { Component } from 'react'
 import { withStyle, jsx } from '@instructure/emotion'
+import { View } from '@instructure/ui-view'
 import shallowCompare from '../utils/shallowCompare'
 import { ColorPaletteProps, ColorPaletteState } from './props'
 import { HSVType } from '../props'
@@ -41,11 +42,10 @@ class ColorPalette extends Component<ColorPaletteProps, ColorPaletteState> {
       colorPosition: { x: 0, y: 0 }
     }
   }
-  paletteRef: HTMLCanvasElement | null = null
+  paletteRef: HTMLDivElement | null = null
 
   componentDidMount() {
     this.props.makeStyles?.(this.state)
-    this.drawPalette(this.props.hue)
     this.setState({
       colorPosition: this.calcPositionFromColor(this.props.color)
     })
@@ -54,12 +54,16 @@ class ColorPalette extends Component<ColorPaletteProps, ColorPaletteState> {
   componentDidUpdate(prevProps: ColorPaletteProps) {
     this.props.makeStyles?.(this.state)
     if (prevProps.hue !== this.props.hue) {
-      this.drawPalette(this.props.hue)
-      this.props.onChange({
-        h: this.props.hue,
-        s: this.calcSaturation(this.state.colorPosition.x),
-        v: this.calcLuminance(this.state.colorPosition.y)
-      })
+      // console.log({
+      //   h: this.props.hue,
+      //   s: this.calcSaturation(this.state.colorPosition.x),
+      //   v: this.calcLuminance(this.state.colorPosition.y)
+      // })
+      // this.props.onChange({
+      //   h: this.props.hue,
+      //   s: this.calcSaturation(this.state.colorPosition.x),
+      //   v: this.calcLuminance(this.state.colorPosition.y)
+      // })
     }
 
     if (
@@ -75,34 +79,6 @@ class ColorPalette extends Component<ColorPaletteProps, ColorPaletteState> {
     this.removeEventListeners()
   }
 
-  drawPalette(hue: number) {
-    const canvasContext = this.paletteRef!.getContext('2d')
-
-    const colorGradient = canvasContext!.createLinearGradient(
-      0,
-      0,
-      this.props.width,
-      0
-    )
-    colorGradient.addColorStop(0, 'white')
-    colorGradient.addColorStop(1, `hsl(${hue},100%,50%)`)
-
-    canvasContext!.fillStyle = colorGradient
-    canvasContext!.fillRect(0, 0, this.props.width, this.props.height)
-
-    const shadeGradient = canvasContext!.createLinearGradient(
-      0,
-      this.props.height,
-      0,
-      0
-    )
-    shadeGradient.addColorStop(0, 'rgba(0,0,0,1)')
-    shadeGradient.addColorStop(1, 'rgba(0,0,0,0)')
-
-    canvasContext!.fillStyle = shadeGradient
-    canvasContext!.fillRect(0, 0, this.props.width, this.props.height)
-  }
-
   calcSaturation = (position: number) =>
     Math.round((position / this.props.width) * 100) / 100
   calcLuminance = (position: number) =>
@@ -115,10 +91,10 @@ class ColorPalette extends Component<ColorPaletteProps, ColorPaletteState> {
       y: this.props.height - v * this.props.height
     }
   }
-
-  handlePaletteMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  //TODO remove any
+  handlePaletteMouseDown(e: React.MouseEvent<any, MouseEvent>) {
     this.handleChange(e)
-    //TODO
+    //TODO remove any
     window.addEventListener('mousemove', this.handleChange as any)
     window.addEventListener('mouseup', this.handleMouseUp)
   }
@@ -128,7 +104,7 @@ class ColorPalette extends Component<ColorPaletteProps, ColorPaletteState> {
   }
 
   removeEventListeners() {
-    //TODO
+    //TODO remove any
     window.removeEventListener('mousemove', this.handleChange as any)
     window.removeEventListener('mouseup', this.handleMouseUp)
   }
@@ -173,20 +149,23 @@ class ColorPalette extends Component<ColorPaletteProps, ColorPaletteState> {
       v: this.calcLuminance(newYPosition)
     })
   }
-  handleKeyDown(e: React.KeyboardEvent<HTMLCanvasElement>) {
+  //TODO remove any
+  handleKeyDown(e: React.KeyboardEvent<any>) {
+    const { key } = e
+    if (key === 'Tab') return
     e.preventDefault()
     let deltaX = 0
     let deltaY = 0
-    if (e.key === 'ArrowLeft') {
+    if (key === 'ArrowLeft' || key === 'a') {
       deltaX = -2
     }
-    if (e.key === 'ArrowRight') {
+    if (key === 'ArrowRight' || key === 'd') {
       deltaX = 2
     }
-    if (e.key === 'ArrowUp') {
+    if (key === 'ArrowUp' || key === 'w') {
       deltaY = -2
     }
-    if (e.key === 'ArrowDown') {
+    if (key === 'ArrowDown' || key === 's') {
       deltaY = 2
     }
 
@@ -207,29 +186,28 @@ class ColorPalette extends Component<ColorPaletteProps, ColorPaletteState> {
 
   render() {
     return (
-      <div
-        role="button"
-        tabIndex={0}
+      <View
+        position="relative"
+        width={this.props.width}
+        height={this.props.height}
+        background="transparent"
+        margin="xx-small"
+        display="inline-block"
+        borderRadius="medium"
+        borderWidth="0"
+        padding="0"
+        as="button"
+        onKeyDown={(e) => this.handleKeyDown(e)}
         onMouseDown={(e) => this.handlePaletteMouseDown(e)}
-        css={this.props.styles?.ColorPalette}
       >
+        <div css={this.props.styles?.indicator} />
         <div
-          role="button"
-          tabIndex={0}
-          onMouseDown={(e) => this.handlePaletteMouseDown(e)}
-          css={this.props.styles?.indicator}
-        ></div>
-        <canvas
-          css={this.props.styles?.canvas}
-          tabIndex={0}
-          onKeyDown={(e) => this.handleKeyDown(e)}
+          css={this.props.styles?.palette}
           ref={(ref) => {
             this.paletteRef = ref
           }}
-          width={this.props.width}
-          height={this.props.height}
         />
-      </div>
+      </View>
     )
   }
 }

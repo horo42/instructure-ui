@@ -24,6 +24,7 @@
     "@babel/runtime": "^7.13.10",
     "@instructure/emotion": "8.23.0",
     "@instructure/shared-types": "8.23.0",
+    "@instructure/ui-a11y-content": "8.23.0",
     "@instructure/ui-buttons": "8.23.0",
     "@instructure/ui-color-utils": "8.23.0",
     "@instructure/ui-form-field": "7.17.0",
@@ -36,7 +37,6 @@
     "@instructure/ui-text-input": "8.23.0",
     "@instructure/ui-tooltip": "8.23.0",
     "@instructure/ui-view": "8.23.0",
-    "@instructure/ui-a11y-content": "8.23.0",
     "prop-types": "^15"
   },
   "devDependencies": {

@@ -54,4 +54,9 @@ const colorToHsva = (color: string): any => {
   return Color(color).toHsv()
 }
 
-export { color2hex, hexToRgb, colorTohex8, colorToHsva }
+//TODO type
+const colorToHsla = (color: string): any => {
+  return Color(color).toHsl()
+}
+
+export { color2hex, hexToRgb, colorTohex8, colorToHsva, colorToHsla }

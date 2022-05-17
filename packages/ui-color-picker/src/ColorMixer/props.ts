@@ -46,6 +46,11 @@ type HSVType = {
   s: number
   v: number
 }
+type HSLType = {
+  h: number
+  s: number
+  l: number
+}
 type RGBAType = {
   r: number
   g: number
@@ -59,7 +64,10 @@ type ColorMixerOwnProps = {
 }
 
 type ColorMixerState = {
-  hue: number
+  h: number
+  s: number
+  v: number
+  a: number
   internalColor: string
   test: string
 }
@@ -90,6 +98,7 @@ export type {
   MessageType,
   RGBType,
   RGBAType,
-  HSVType
+  HSVType,
+  HSLType
 }
 export { propTypes, allowedProps }

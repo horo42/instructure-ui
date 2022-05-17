@@ -47,7 +47,10 @@ class ColorMixer extends Component<ColorMixerProps, ColorMixerState> {
   constructor(props: ColorMixerProps) {
     super(props)
     this.state = {
-      hue: 0,
+      h: 0,
+      s: 0,
+      v: 0,
+      a: 1,
       internalColor: '',
       test: '#00ffff'
     }
@@ -67,80 +70,95 @@ class ColorMixer extends Component<ColorMixerProps, ColorMixerState> {
   componentDidMount() {
     this.props.makeStyles?.()
     this.setState({
-      hue: colorToHsva(this.props.value).h,
+      h: colorToHsva(this.props.value).h,
       test: colorTohex8(this.props.value)
     })
   }
 
-  componentDidUpdate(prevProps: ColorMixerProps) {
+  componentDidUpdate(prevProps: ColorMixerProps, prevState: ColorMixerState) {
     this.props.makeStyles?.()
-
+    const { h, s, v, a } = this.state
+    if (
+      prevState.h !== h ||
+      prevState.s !== s ||
+      prevState.v !== v ||
+      prevState.a !== a
+    ) {
+      this.setState({ internalColor: colorTohex8({ h, s, v, a }) })
+      this.props.onChange(colorTohex8({ h, s, v, a }))
+    }
     if (
       prevProps.value !== this.props.value &&
       this.state.internalColor !== this.props.value
     ) {
       this.setState({
-        //internalColor: colorTohex8(this.props.value),
-        hue: colorToHsva(this.props.value).h,
-        test: colorTohex8(this.props.value)
+        ...colorToHsva(this.props.value)
       })
     }
   }
 
-  internalOnChange(hexColor: string) {
-    this.setState({ internalColor: hexColor })
-    this.onChange(hexColor)
-  }
+  // internalOnChange(hexColor: string) {
+  //   this.setState({ internalColor: hexColor })
+  //   this.onChange(hexColor)
+  // }
   onOpacityChange = (opacity: number) => {
-    this.onChange(
-      colorTohex8({ ...hexToRgb(this.props.value), a: opacity / 100 })
-    )
+    this.setState({ a: opacity / 100 })
+    // const hsvaColor = {
+    //   ...colorToHsva(this.state.test),
+    //   h: this.state.h,
+    //   a: opacity / 100
+    // }
+    // console.log(hsvaColor)
+    // this.onChange(colorTohex8(hsvaColor))
   }
   onChange(color: string, hue?: number) {
-    const newHue = hue || this.state.hue
-    this.setState({ test: color, hue: newHue })
+    const newHue = hue || this.state.h
+    this.setState({ test: color, h: newHue })
     const newColor =
       color[7] === 'F' && color[8] === 'F' ? color.slice(0, -2) : color
     this.props.onChange(newColor)
   }
   render() {
+    const { h, s, v, a } = this.state
     return (
       <div css={this.props.styles?.colorMixer}>
         <span aria-label={`${colorTohex8(this.state.test)}`} aria-live="polite">
+          h:{h} s:{s} v:{v}
+          <hr></hr>
           <ColorPalette
             width={this.width}
             height={this.paletteHeight}
             indicatorRadius={this.paletteIndicatiorRadius}
-            hue={this.state.hue}
+            hue={h}
             color={{
-              ...colorToHsva(this.state.test),
-              h: this.state.hue
+              h,
+              s,
+              v
             }}
             internalColor={{
               ...colorToHsva(this.state.internalColor),
-              h: this.state.hue
+              h
             }}
-            onChange={(color: HSVType) =>
-              this.internalOnChange(
-                colorTohex8({ ...color, a: hexToRgb(this.state.test).a })
-              )
-            }
+            onChange={(color: HSVType) => {
+              this.setState({ s: color.s, v: color.v })
+            }}
           />
           <Slider
             isColorSlider
             width={this.width}
             height={this.sliderHeight}
             indicatorRadius={this.sliderIndicatiorRadius}
-            value={this.state.hue}
+            value={h}
             color={colorTohex8(this.state.test)}
             onChange={(hue: number) => {
-              this.onChange(
-                colorTohex8({
-                  ...colorToHsva(this.state.test),
-                  h: hue
-                }),
-                hue
-              )
+              this.setState({ h: hue })
+              // this.onChange(
+              //   colorTohex8({
+              //     ...colorToHsva(this.state.test),
+              //     h: hue
+              //   }),
+              //   hue
+              // )
             }}
           />
           {this.props.withAlpha && (
@@ -148,17 +166,17 @@ class ColorMixer extends Component<ColorMixerProps, ColorMixerState> {
               width={this.width}
               height={this.sliderHeight}
               indicatorRadius={this.sliderIndicatiorRadius}
-              color={colorTohex8(this.state.test)}
-              value={hexToRgb(this.state.test).a}
-              onChange={this.onOpacityChange}
+              color={colorTohex8({ h, s, v })}
+              value={a}
+              onChange={(opacity) => this.setState({ a: opacity / 100 })}
             ></Slider>
           )}
         </span>
-        <RGBAInput
+        {/* <RGBAInput
           value={hexToRgb(this.state.test)}
           onChange={(color) => this.onChange(colorTohex8(color))}
           withAlpha={this.props.withAlpha}
-        />
+        /> */}
       </div>
     )
   }

@@ -28,10 +28,7 @@ import { Component } from 'react'
 import { TextInput } from '@instructure/ui-text-input'
 import { Tooltip } from '@instructure/ui-tooltip'
 import { Button, ColorButton } from '@instructure/ui-buttons'
-import {
-  colorTohex8,
-  hexToRgb
-} from '@instructure/ui-color-utils/src/conversions'
+import { colorTohex8 } from '@instructure/ui-color-utils/src/conversions'
 import { isValid } from '@instructure/ui-color-utils/src/isValid'
 import { getContrast2Dec as getContrast } from '@instructure/ui-color-utils/src/contrast'
 
@@ -42,6 +39,7 @@ import generateComponentTheme from './theme'
 import { Popover } from '@instructure/ui-popover'
 import ColorMixer from '../ColorMixer'
 import ColorContrast from '../ColorContrast'
+import ColorPreset from '../ColorPreset'
 import {
   IconCheckDarkLine,
   IconWarningLine,
@@ -215,10 +213,10 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
     ]
   }
   renderBeforeInput() {
-    const { simpleView, styles } = this.props
+    const { simpleView, styles, children } = this.props
     return (
       <div css={styles?.simpleColorContainer}>
-        {simpleView && this.renderCircle()}
+        {simpleView && !children && this.renderCircle()}
         <div css={styles?.hashMarkContainer}>#</div>
       </div>
     )
@@ -315,7 +313,7 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
   stripAlphaIfNeeded = (hex: string) =>
     hex.slice(-2) === 'FF' ? hex.slice(0, -2) : hex
 
-  renderAddNewPresetButton = () => (
+  renderChildren = () => (
     <Popover
       renderTrigger={<ColorButton color={`#${this.state.hexCode}`} />}
       isShowingContent={this.state.openColorPicker}
@@ -334,33 +332,106 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
       mountNode={() => document.getElementById('main')}
     >
       <div style={{ padding: '20px' }}>
-        <ColorMixer
-          value={hexToRgb(`#${this.state.mixedColor}`)}
-          onChange={(newColor: string) =>
-            this.setState({ mixedColor: colorTohex8(newColor).slice(1) })
-          }
-          withAlpha={this.props.withAlpha}
-        />
-        <div
-          style={{
-            borderTop: 'solid',
-            borderWidth: '1px',
-            borderColor: '#C7CDD1' /*Tiara */,
-            margin: '20px 0 20px 0'
-          }}
-        />
-        <ColorContrast
-          firstColor="#FFFFFF"
-          secondColor={`#${this.stripAlphaIfNeeded(this.state.mixedColor)}`}
-          label="Color Contrast Ratio"
-          successLabel="PASS"
-          failureLabel="FAIL"
-          normalTextLabel="Normal text"
-          largeTextLabel="Large text"
-          graphicsTextLabel="Graphics text"
-          firstColorLabel="Background"
-          secondColorLabel="Foreground"
-        />
+        {typeof this.props?.children === 'function' &&
+          this.props?.children(
+            this.stripAlphaIfNeeded(this.state.mixedColor),
+            (color: string) => {
+              this.setState({ mixedColor: color })
+            },
+            () => {
+              this.setState({
+                openColorPicker: false,
+                hexCode: `${this.stripAlphaIfNeeded(this.state.mixedColor)}`
+              })
+              this.props?.onChange?.(this.state.mixedColor.slice(1))
+            },
+            () =>
+              this.setState({
+                openColorPicker: false,
+                mixedColor: this.state.hexCode
+              })
+          )}
+      </div>
+    </Popover>
+  )
+  renderAddNewColorPickerButton = () => (
+    <Popover
+      renderTrigger={<ColorButton color={`#${this.state.hexCode}`} />}
+      isShowingContent={this.state.openColorPicker}
+      onShowContent={() => {
+        this.setState({ openColorPicker: true })
+      }}
+      onHideContent={() => {
+        this.setState({ openColorPicker: false })
+      }}
+      on="click"
+      screenReaderLabel="Popover Dialog Example"
+      shouldContainFocus
+      shouldReturnFocus
+      shouldCloseOnDocumentClick
+      offsetY="16px"
+      mountNode={() => document.getElementById('main')}
+    >
+      <div style={{ padding: '20px' }}>
+        {this.props?.settings?.colorMixer && (
+          <ColorMixer
+            value={`#${this.state.mixedColor}`}
+            onChange={(newColor: string) =>
+              this.setState({ mixedColor: colorTohex8(newColor).slice(1) })
+            }
+            withAlpha={this.props.settings.colorMixer.withAlpha}
+          />
+        )}
+        {this.props?.settings?.colorPreset && (
+          <div
+            style={{
+              borderTop: 'solid',
+              borderWidth: '1px',
+              borderColor: '#C7CDD1' /*Tiara */,
+              margin: '20px 0 20px 0'
+            }}
+          >
+            <ColorPreset
+              label={this.props.settings.colorPreset.label}
+              colors={this.props.settings.colorPreset.colors}
+              selected={this.state.mixedColor}
+              onSelect={(color: string) =>
+                this.setState({ mixedColor: color.slice(1) })
+              }
+            />
+          </div>
+        )}
+        {this.props?.settings?.colorContrast && (
+          <div
+            style={{
+              borderTop: 'solid',
+              borderWidth: '1px',
+              borderColor: '#C7CDD1' /*Tiara */,
+              margin: '20px 0 20px 0'
+            }}
+          >
+            <ColorContrast
+              firstColor={this.props.settings.colorContrast.firstColor}
+              secondColor={`#${this.stripAlphaIfNeeded(this.state.mixedColor)}`}
+              label={this.props.settings.colorContrast.label}
+              successLabel={this.props.settings.colorContrast.successLabel}
+              failureLabel={this.props.settings.colorContrast.failureLabel}
+              normalTextLabel={
+                this.props.settings.colorContrast.normalTextLabel
+              }
+              largeTextLabel={this.props.settings.colorContrast.largeTextLabel}
+              graphicsTextLabel={
+                this.props.settings.colorContrast.graphicsTextLabel
+              }
+              firstColorLabel={
+                this.props.settings.colorContrast.firstColorLabel
+              }
+              secondColorLabel={
+                this.props.settings.colorContrast.secondColorLabel
+              }
+            />
+          </div>
+        )}
       </div>
       <div
         style={{
@@ -422,7 +493,12 @@ class ColorPicker extends Component<ColorPickerProps, ColorPickerState> {
         />
         {!this.props.simpleView && (
           <div style={{ alignSelf: 'flex-end', marginLeft: '8px' }}>
-            {this.renderAddNewPresetButton()}
+            {this.renderAddNewColorPickerButton()}
+          </div>
+        )}
+        {this.props.children && (
+          <div style={{ alignSelf: 'flex-end', marginLeft: '8px' }}>
+            {this.renderChildren()}
           </div>
         )}
       </div>

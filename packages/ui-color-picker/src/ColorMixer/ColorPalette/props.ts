@@ -34,7 +34,6 @@ import type { HSVType } from '../props'
 type ColorPaletteOwnProps = {
   hue: number
   color: HSVType
-  internalColor: HSVType
   width: number
   height: number
   indicatorRadius: number
@@ -59,7 +58,6 @@ type ColorPaletteStyle = ComponentStyle<
 const propTypes: PropValidators<PropKeys> = {
   hue: PropTypes.number,
   color: PropTypes.object,
-  internalColor: PropTypes.object,
   width: PropTypes.number,
   height: PropTypes.number,
   indicatorRadius: PropTypes.number,
@@ -69,7 +67,6 @@ const propTypes: PropValidators<PropKeys> = {
 const allowedProps: AllowedPropKeys = [
   'hue',
   'color',
-  'internalColor',
   'width',
   'height',
   'indicatorRadius',

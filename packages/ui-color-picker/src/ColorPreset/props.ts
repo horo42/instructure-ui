@@ -55,7 +55,7 @@ type ColorPresetOwnProps = {
   /**
    * The function gets called when a color gets selected
    */
-  onSelect: (selected: ColorPresetOwnProps['selected']) => void
+  onSelect: (selected: string) => void
   /**
    * The currently selected HEX string
    */

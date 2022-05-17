@@ -143,6 +143,26 @@ type ColorPickerOwnProps = {
    */
   simpleView: boolean
 
+  settings: {
+    colorMixer?: {
+      withAlpha: boolean
+    }
+    colorPreset?: {
+      colors: Array<string>
+      label: string
+    }
+    colorContrast?: {
+      firstColor: string
+      label: string
+      successLabel: string
+      failureLabel: string
+      normalTextLabel: string
+      largeTextLabel: string
+      graphicsTextLabel: string
+      firstColorLabel: string
+      secondColorLabel: string
+    }
+  }
   /**
    * If set, an info icon with a tooltip will be displayed
    */
@@ -200,6 +220,7 @@ const propTypes: PropValidators<PropKeys> = {
   renderInvalidColorMessage: PropTypes.func,
   renderIsRequiredMessage: PropTypes.func,
   renderMessages: PropTypes.func,
+  settings: PropTypes.object,
   simpleView: PropTypes.bool,
   tooltip: PropTypes.node,
   value: PropTypes.string,
@@ -218,6 +239,7 @@ const allowedProps: AllowedPropKeys = [
   'renderInvalidColorMessage',
   'renderIsRequiredMessage',
   'renderMessages',
+  'settings',
   'simpleView',
   'tooltip',
   'value',

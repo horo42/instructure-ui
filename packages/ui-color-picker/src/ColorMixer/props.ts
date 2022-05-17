@@ -68,8 +68,6 @@ type ColorMixerState = {
   s: number
   v: number
   a: number
-  internalColor: string
-  test: string
 }
 
 type PropKeys = keyof ColorMixerOwnProps

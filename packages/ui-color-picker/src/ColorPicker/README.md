@@ -6,6 +6,114 @@ The `ColorPicker` can be used in color input or full color picker mode.
 In color input mode ( `simpleView` prop set to `true`), it lets the user enter hex codes. It will display the color, validate the hex or check the contrast.
 The component can be either `uncontrolled` or `controlled`. If the `onChange` and `value` props are used, it will behave in a `controlled` manner, otherwise `uncontrolled`.
 
+### Custom colorPicker
+
+```js
+---
+render: false
+example: true
+---
+class Example extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      value: ""
+    }
+  }
+
+  renderPopoverContent=( value, onChange,handleAdd,handleClose)=>(
+    <div>
+      <div style={{ padding: '20px' }}>
+        <ColorMixer
+          withAlpha
+          value={value}
+          onChange={onChange} />
+        <div
+          style={{
+            borderTop: 'solid',
+            borderWidth: '1px',
+            borderColor: '#C7CDD1' /*Tiara */,
+            margin: '20px 0 20px 0'
+          }}
+        />
+        <ColorPreset
+          label="Choose a color"
+          colors={ ['#ffffff', '#0CBF94', '#0C89BF00', '#BF0C6D', '#BF8D0C', '#ff0000', '#576A66', '#35423A', '#35423F']}
+          selected={value}
+          onSelect={onChange}
+        />
+      <div
+          style={{
+            borderTop: 'solid',
+            borderWidth: '1px',
+            borderColor: '#C7CDD1' /*Tiara */,
+            margin: '20px 0 20px 0'
+          }}
+        />
+        <ColorContrast
+          firstColor="#FFFFFF"
+          secondColor={value}
+          label="Color Contrast Ratio"
+          successLabel="PASS"
+          failureLabel="FAIL"
+          normalTextLabel="Normal text"
+          largeTextLabel="Large text"
+          graphicsTextLabel="Graphics text"
+          firstColorLabel="Background"
+          secondColorLabel="Foreground"
+        />
+      </div>
+      <div
+          style={{
+            backgroundColor: '#F5F5F5',
+            display: 'flex',
+            flexDirection: 'row-reverse',
+            padding: '7px',
+            borderTop: 'solid 1px #C7CDD1'
+          }}
+        >
+        <Button
+          onClick={handleAdd}
+          color="primary"
+          margin="xx-small"
+        >
+          Add
+        </Button>
+        <Button
+          onClick={handleClose}
+          color="secondary"
+          margin="xx-small"
+        >
+        Close
+        </Button>
+      </div>
+    </div>)
+
+
+   render() {
+
+    return (
+<div>
+     <ColorPicker
+          value={this.state.value}
+          onChange={(value)=>{
+            console.log("wtf",value)
+            this.setState({value})}}
+          label="Color Input"
+          tooltip="This is an example"
+          placeholderText="Enter HEX"
+          simpleView={true}
+      >
+        {this.renderPopoverContent}
+      </ColorPicker>
+</div>
+    )}
+}
+
+render(<Example />);
+```
+
 ### Color Input
 
 ```js
@@ -36,6 +144,26 @@ class Example extends React.Component {
           placeholderText="Enter HEX"
           simpleView={false}
           withAlpha={withAlpha}
+          settings={{
+            colorMixer:{
+              withAlpha:false
+            },
+            colorPreset:{
+              label:"Choose a nice color",
+              colors:['#ffffff', '#0CBF94', '#0C89BF00', '#BF0C6D', '#BF8D0C', '#ff0000', '#576A66', '#35423A', '#35423F']
+            },
+            colorContrast:{
+              firstColor:"#FFFF00",
+              label: "Color Contrast Ratio",
+              successLabel: "PASS",
+              failureLabel: "FAIL",
+              normalTextLabel: "Normal text",
+              largeTextLabel:"Large text",
+              graphicsTextLabel:"Graphics text",
+              firstColorLabel:"Background",
+              secondColorLabel:"Foreground"
+            }
+          }}
         />
 
         <hr/>

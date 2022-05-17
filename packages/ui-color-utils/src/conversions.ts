@@ -50,7 +50,12 @@ const hexToRgb = (rgb: string): any => {
 }
 
 //TODO type
-const colorToHsva = (color: string): any => {
+const colorToRGB = (color: any): any => {
+  return Color(color).toRgb()
+}
+
+//TODO type
+const colorToHsva = (color: any): any => {
   return Color(color).toHsv()
 }
 
@@ -59,4 +64,11 @@ const colorToHsla = (color: string): any => {
   return Color(color).toHsl()
 }
 
-export { color2hex, hexToRgb, colorTohex8, colorToHsva, colorToHsla }
+export {
+  color2hex,
+  hexToRgb,
+  colorTohex8,
+  colorToHsva,
+  colorToHsla,
+  colorToRGB
+}

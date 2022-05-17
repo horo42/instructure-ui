@@ -53,23 +53,8 @@ class ColorPalette extends Component<ColorPaletteProps, ColorPaletteState> {
 
   componentDidUpdate(prevProps: ColorPaletteProps) {
     this.props.makeStyles?.(this.state)
-    if (prevProps.hue !== this.props.hue) {
-      // console.log({
-      //   h: this.props.hue,
-      //   s: this.calcSaturation(this.state.colorPosition.x),
-      //   v: this.calcLuminance(this.state.colorPosition.y)
-      // })
-      // this.props.onChange({
-      //   h: this.props.hue,
-      //   s: this.calcSaturation(this.state.colorPosition.x),
-      //   v: this.calcLuminance(this.state.colorPosition.y)
-      // })
-    }
 
-    if (
-      shallowCompare(prevProps.color, this.props.color) &&
-      shallowCompare(this.props.internalColor, this.props.color)
-    ) {
+    if (shallowCompare(prevProps.color, this.props.color)) {
       this.setState({
         colorPosition: this.calcPositionFromColor(this.props.color)
       })
